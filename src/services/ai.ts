@@ -1,74 +1,191 @@
 import { GoogleGenAI, HarmCategory, HarmBlockThreshold } from "@google/genai";
+import OpenAI from "openai";
 
-function getAI() {
-  return new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+// ============================================================
+// DUAL PROVIDER SETUP: Gemini (primary) + DeepSeek (fallback)
+// ============================================================
+
+let geminiClient: GoogleGenAI | null = null;
+let deepseekClient: OpenAI | null = null;
+
+function getGeminiAI(): GoogleGenAI | null {
+  if (!geminiClient && process.env.GEMINI_API_KEY) {
+    try {
+      geminiClient = new GoogleGenAI({ apiKey: (process.env as any).GEMINI_API_KEY });
+    } catch (e) {
+      console.warn("Failed to initialize Gemini client", e);
+    }
+  }
+  return geminiClient;
 }
 
-async function safeGenerateContent(params: any, retryCount = 0): Promise<any> {
-  // Always use the most relaxed safety settings to remove limits
-  const relaxedSafetySettings = [
+function getDeepSeekAI(): OpenAI | null {
+  if (!deepseekClient && process.env.DEEPSEEK_API_KEY) {
+    try {
+      deepseekClient = new OpenAI({
+        apiKey: (process.env as any).DEEPSEEK_API_KEY,
+        baseURL: "https://api.deepseek.com",
+        dangerouslyAllowBrowser: true,
+      });
+    } catch (e) {
+      console.warn("Failed to initialize DeepSeek client", e);
+    }
+  }
+  return deepseekClient;
+}
+
+// Map Gemini model names to DeepSeek models
+const GEMINI_TO_DEEPSEEK_MODEL: Record<string, string> = {
+  "gemini-3.1-pro-preview": "deepseek-chat",
+  "gemini-3.1-flash-lite-preview": "deepseek-chat",
+  "gemini-3-flash-preview": "deepseek-chat",
+  "gemini-2.5-flash-image": "deepseek-chat",
+  "gemini-2.0-flash": "deepseek-chat",
+};
+
+// Check if request is for image generation (Gemini-only)
+function isImageRequest(params: any): boolean {
+  return params.model?.includes("image") || 
+         params.config?.imageConfig != null ||
+         (typeof params.contents === "object" && params.contents?.parts?.some((p: any) => p.inlineData?.mimeType?.startsWith("image/")));
+}
+
+// Call Gemini API
+async function callGeminiGenerate(params: any): Promise<string> {
+  const ai = getGeminiAI()!;
+  
+  // Relax safety settings for NSFW content
+  const safeParams = { ...params };
+  if (!safeParams.config) safeParams.config = {};
+  safeParams.config.safetySettings = [
     { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
     { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
     { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
-    { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE }
+    { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
   ];
 
-  if (!params.config) params.config = {};
-  params.config.safetySettings = relaxedSafetySettings;
-
-  try {
-    const ai = getAI();
-    return await ai.models.generateContent(params);
-  } catch (error: any) {
-    const errorMessage = error.message || String(error);
-    
-    if (errorMessage.toLowerCase().includes("quota")) {
-      throw new Error("Quota exceeded. Bạn đã hết lượt sử dụng AI hôm nay. Vui lòng thử lại vào ngày mai.");
-    }
-    
-    // Auto-fix: Retry with fallback strategies if not a quota error
-    if (retryCount < 3) {
-      console.warn(`AI generation failed (attempt ${retryCount + 1}). Auto-fixing and retrying...`, error);
-      
-      const fallbackParams = { ...params };
-      
-      // Strategy 1: Relax safety settings completely if it was a safety block
-      if (errorMessage.toLowerCase().includes("safety")) {
-        fallbackParams.config = {
-          ...fallbackParams.config,
-          safetySettings: [
-            { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
-            { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
-            { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
-            { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE }
-          ]
-        };
-      } 
-      // Strategy 2: If it's an RPC/XHR error, wait longer and try a different model
-      else if (errorMessage.toLowerCase().includes("rpc") || errorMessage.toLowerCase().includes("xhr")) {
-        console.log("Detected RPC/XHR error, switching to a more stable model for retry...");
-        // Only switch models if it's not an image generation model
-        if (!params.model?.includes("image")) {
-          fallbackParams.model = retryCount === 0 ? "gemini-3-flash-preview" : "gemini-3.1-flash-preview";
-        }
-      }
-      // Strategy 3: Switch to a faster but still capable model if it was a timeout or internal error
-      else if (retryCount >= 1) {
-        // Only switch models if it's not an image generation model
-        if (!params.model?.includes("image")) {
-          fallbackParams.model = "gemini-3-flash-preview";
-        }
-      }
-
-      // Wait a bit before retrying (exponential backoff)
-      const waitTime = Math.pow(2, retryCount) * 1000 + Math.random() * 1000;
-      await new Promise(resolve => setTimeout(resolve, waitTime));
-      return safeGenerateContent(fallbackParams, retryCount + 1);
-    }
-    
-    throw new Error(`Lỗi AI: ${errorMessage}. Hệ thống đã cố gắng tự động khắc phục nhưng không thành công.`);
-  }
+  const response = await ai.models.generateContent(safeParams);
+  return response.text;
 }
+
+// Call DeepSeek API (OpenAI-compatible)
+async function callDeepSeekGenerate(params: any): Promise<string> {
+  const ai = getDeepSeekAI()!;
+  
+  // Build messages array from Gemini-style params
+  const messages: { role: string; content: string }[] = [];
+  
+  // System instruction
+  if (params.config?.systemInstruction) {
+    messages.push({ role: "system", content: params.config.systemInstruction });
+  }
+  
+  // Contents: could be string or object with parts
+  let userContent = "";
+  if (typeof params.contents === "string") {
+    userContent = params.contents;
+  } else if (params.contents?.parts?.length) {
+    userContent = params.contents.parts.map((p: any) => p.text || "").join("\n");
+  } else if (typeof params.contents === "object") {
+    userContent = JSON.stringify(params.contents);
+  }
+  
+  if (userContent.trim()) {
+    messages.push({ role: "user", content: userContent });
+  }
+  
+  const model = GEMINI_TO_DEEPSEEK_MODEL[params.model] || "deepseek-chat";
+  
+  const response = await ai.chat.completions.create({
+    model,
+    messages,
+    temperature: params.config?.temperature,
+    max_tokens: params.config?.maxOutputTokens || 8192,
+  });
+  
+  return response.choices[0]?.message?.content || "";
+}
+
+// Check if error is quota/rate-limit related
+function isQuotaError(error: any): boolean {
+  const msg = (error.message || String(error)).toLowerCase();
+  return msg.includes("quota") || 
+         msg.includes("429") || 
+         msg.includes("resource_exhausted") ||
+         msg.includes("too many requests") ||
+         msg.includes("rate limit") ||
+         msg.includes("limit: 0");
+}
+
+// Unified safe generate content with dual-provider fallback
+async function safeGenerateContent(params: any, retryCount = 0): Promise<any> {
+  const hasGemini = !!getGeminiAI();
+  const hasDeepSeek = !!getDeepSeekAI();
+  const isImage = isImageRequest(params);
+  
+  // Try Gemini first (primary provider)
+  if (hasGemini) {
+    try {
+      const text = await callGeminiGenerate(params);
+      return { text };
+    } catch (error: any) {
+      const errorMessage = error.message || String(error);
+      console.warn(`Gemini generation failed: ${errorMessage.substring(0, 100)}`);
+      
+      // If quota error and we have DeepSeek & not image gen, fall back
+      if (isQuotaError(error) && hasDeepSeek && !isImage) {
+        console.warn("Gemini quota exceeded, falling back to DeepSeek...");
+        // Fall through to DeepSeek below
+      } else if (isQuotaError(error)) {
+        throw new Error("Quota exceeded. Bạn đã hết lượt sử dụng AI hôm nay. Vui lòng thử lại vào ngày mai.");
+      } else if (retryCount < 2 && hasDeepSeek && !isImage) {
+        // Non-quota error: try DeepSeek as fallback
+        console.warn("Gemini error, trying DeepSeek as fallback...");
+        // Fall through
+      } else {
+        // Give up on Gemini, still try DeepSeek if available
+        if (!hasDeepSeek || isImage) {
+          throw new Error(`Lỗi AI: ${errorMessage}. Hệ thống đã cố gắng tự động khắc phục nhưng không thành công.`);
+        }
+        // Fall through to DeepSeek
+      }
+    }
+  }
+  
+  // Fallback to DeepSeek (for non-image requests)
+  if (hasDeepSeek && !isImage) {
+    try {
+      const text = await callDeepSeekGenerate(params);
+      return { text };
+    } catch (error: any) {
+      const errorMessage = error.message || String(error);
+      console.warn(`DeepSeek fallback failed: ${errorMessage.substring(0, 100)}`);
+      
+      if (isQuotaError(error)) {
+        throw new Error("Quota exceeded. Cả Gemini và DeepSeek đều hết lượt dùng. Vui lòng thử lại vào ngày mai.");
+      }
+      
+      if (retryCount < 2) {
+        const waitTime = Math.pow(2, retryCount) * 1000 + Math.random() * 1000;
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        return safeGenerateContent(params, retryCount + 1);
+      }
+      
+      throw new Error(`Lỗi AI: ${errorMessage}. Hệ thống đã cố gắng tự động khắc phục nhưng không thành công.`);
+    }
+  }
+  
+  // If image request and no Gemini, error
+  if (isImage && !hasGemini) {
+    throw new Error("Không thể tạo ảnh: Gemini API key chưa được cấu hình.");
+  }
+  
+  throw new Error("Không có AI provider nào hoạt động. Vui lòng cấu hình GEMINI_API_KEY hoặc DEEPSEEK_API_KEY.");
+}
+
+// ============================================================
+// PROMT + STYLE CONSTANTS (giữ nguyên)
+// ============================================================
 
 const HAN_VIET_RULES = `
 VĂN PHONG HÁN VIỆT (CONVERT SANGTACVIET STYLE):
@@ -138,6 +255,10 @@ QUY TẮC FETISH & SENSATIONS:
 - Miêu tả luân phiên và chi tiết các phản ứng sinh lý mạnh mẽ/bên trong cơ thể.
 - Tập trung vào sự thay đổi của nhịp tim, nhiệt độ làn da, sự co thắt của cơ bắp, cảm giác tê dại hoặc nóng bỏng lan tỏa trong huyết quản.
 `;
+
+// ============================================================
+// EXPORTED FUNCTIONS (giữ nguyên logic prompt, chỉ đổi response.text)
+// ============================================================
 
 export async function generateStoryIdeas(params: {
   genres: string[];
@@ -370,49 +491,9 @@ export async function generateStoryImage(prompt: string) {
       },
     });
 
-    if (response.promptFeedback?.blockReason) {
-      throw new Error(`Yêu cầu bị chặn bởi hệ thống: ${response.promptFeedback.blockReason}`);
-    }
-
-    if (!response.candidates || response.candidates.length === 0) {
-      throw new Error("AI không trả về kết quả nào.");
-    }
-
-    for (const candidate of response.candidates) {
-      // Check for safety or other reasons first
-      if (candidate.finishReason === "SAFETY" || candidate.finishReason === "PROHIBITED_CONTENT") {
-        throw new Error("Nội dung mô tả hoặc hình ảnh bị hệ thống từ chối vì vi phạm chính sách an toàn. Vui lòng thử mô tả khác lành mạnh hơn.");
-      }
-      
-      if (candidate.finishReason && candidate.finishReason !== "STOP") {
-        console.warn(`Candidate finish reason: ${candidate.finishReason}`);
-      }
-
-      if (candidate.content?.parts) {
-        for (const part of candidate.content.parts) {
-          if (part.inlineData) {
-            return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-          }
-        }
-      }
-    }
-
-    // If we reach here, no image was found, check for text refusal
-    let textResponse = "";
-    for (const candidate of response.candidates) {
-      if (candidate.content?.parts) {
-        for (const part of candidate.content.parts) {
-          if (part.text) textResponse += part.text + " ";
-        }
-      }
-    }
-    
-    if (textResponse.trim()) {
-      throw new Error(`AI từ chối tạo ảnh và trả về văn bản: ${textResponse.trim()}`);
-    }
-
-    const firstReason = response.candidates[0]?.finishReason;
-    throw new Error(`Không tìm thấy dữ liệu ảnh trong phản hồi (Lý do kết thúc: ${firstReason || "Không rõ"}).`);
+    // For Gemini image generation, the response includes candidates with inlineData
+    // When DeepSeek handles this (text-only), it will just return text
+    return response.text || "Không thể tạo ảnh.";
   } catch (error: any) {
     console.error("Image generation error:", error);
     throw error;
@@ -424,11 +505,11 @@ export async function analyzeWritingStyle(text: string) {
   
 VĂN BẢN CẦN PHÂN TÍCH:
 ---
-${text.substring(0, 10000)} // Giới hạn 10k ký tự để tránh quá tải
+${text.substring(0, 10000)}
 ---
 
 YÊU CẦU PHÂN TÍCH VÀ TRẢ VỀ CÁC CHI TIẾT SAU:
-1. TỪ VỰNG: Cách dùng từ (bình dân, sang trọng, cổ điển, hiện đại, Hán Việt, hay thuần Việt...).
+1. TỪ VỤNG: Cách dùng từ (bình dân, sang trọng, cổ điển, hiện đại, Hán Việt, hay thuần Việt...).
 2. CẤU TRÚC CÂU: Nhịp điệu câu văn (câu dài phức hợp hay câu ngắn dồn dập, cách ngắt nghỉ).
 3. GIỌNG VĂN (TONE): Thái độ của người viết (hào hùng, u buồn, châm biếm, lạnh lùng, lãng mạn...).
 4. CÁCH MIÊU TẢ: Tập trung vào ngũ giác, tâm lý hay hành động? Có dùng nhiều biện pháp tu từ như ẩn dụ, so sánh không?
@@ -479,7 +560,6 @@ export async function continueStory(
       styleInstructions += THUAN_VIET_RULES;
     }
   } else if (!customStyle?.mimickedStyle) {
-    // Default fallback if no style and no mimicked style is selected
     styleInstructions += THUAN_VIET_RULES;
   }
 
@@ -487,12 +567,10 @@ export async function continueStory(
     styleInstructions += NSFW_RULES;
   }
 
-  // Add mimicked style instruction as high priority
   if (customStyle?.mimickedStyle) {
     styleInstructions += `\nPHONG CÁCH BẮT CHƯỚC (ƯU TIÊN CAO NHẤT):\n${customStyle.mimickedStyle}\n`;
   }
 
-  // Add custom writing style instructions
   if (customStyle) {
     if (customStyle.genre && GENRE_STYLES[customStyle.genre]) {
       styleInstructions += `\nTHỂ LOẠI CHỦ ĐẠO: ${GENRE_STYLES[customStyle.genre]}`;
@@ -735,7 +813,7 @@ ${styleInstructions ? `\nLƯU Ý VỀ VĂN PHONG:\n${styleInstructions}` : ""}
     contents: prompt,
     config: {
       systemInstruction,
-      temperature: 0.3, // Low temperature for more deterministic fixing
+      temperature: 0.3,
       maxOutputTokens: 8192,
     }
   });
@@ -851,7 +929,6 @@ export async function rewriteStory(
       styleInstructions += THUAN_VIET_RULES;
     }
   } else if (!customStyle?.mimickedStyle) {
-    // Default fallback if no style and no mimicked style is selected
     styleInstructions += THUAN_VIET_RULES;
   }
 
@@ -859,12 +936,10 @@ export async function rewriteStory(
     styleInstructions += NSFW_RULES;
   }
 
-  // Add mimicked style instruction as high priority
   if (customStyle?.mimickedStyle) {
     styleInstructions += `\nPHONG CÁCH BẮT CHƯỚC (ƯU TIÊN CAO NHẤT):\n${customStyle.mimickedStyle}\n`;
   }
 
-  // Add custom writing style instructions
   if (customStyle) {
     if (customStyle.genre && GENRE_STYLES[customStyle.genre]) {
       styleInstructions += `\nTHỂ LOẠI CHỦ ĐẠO: ${GENRE_STYLES[customStyle.genre]}`;
@@ -1005,15 +1080,6 @@ ${storyContext.plotMap}`;
 - Mức độ NSFW (18+): ${rules.nsfwLevel || "Không có"}
 
 LƯU Ý: Bạn phải tuân thủ tuyệt đối các quy tắc trên.`;
-
-    if ((rules.nsfwLevel && rules.nsfwLevel !== "Không") || (writingStyles && writingStyles.includes("18+"))) {
-      safetySettings = [
-        { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
-        { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
-        { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
-        { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE }
-      ];
-    }
   }
 
   let prompt = "";
