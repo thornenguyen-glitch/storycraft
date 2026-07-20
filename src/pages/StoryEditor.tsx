@@ -502,6 +502,24 @@ export default function StoryEditor() {
           content: P_SKILL_PHONG_DAI,
           isActive: true
         });
+        // Add permanent skill: Phản bội cơ thể tột độ
+        const P_SKILL_PHAN_BOI = "BẮT BUỘC TUÂN THỦ KHI VIẾT CẢNH NÓNG:\n\nNGUYÊN LÝ PHẢN BỘI:\n- Ý thức nói \"không\" → cơ thể đáp lại \"có\" một cách nhục nhã\n- Mỗi lần nhân vật nữ cố kìm nén là một lần cơ thể phản bội dữ dội hơn\n- Sự xấu hổ càng lớn → kích thích càng tăng → phản ứng càng mạnh\n- Vòng xoáy: cố kìm → thất bại → nhục nhã → kích thích → phản bội\n\nTÍN HIỆU Ý CHÍ (cố kìm nén — thất bại ngay lập tức):\n- \"Nàng cắn chặt môi đến bật máu nhưng tiếng rên vẫn thoát ra\"\n- \"Nàng quay mặt đi, nhắm nghiền mắt, hai tay nắm chặt — nhưng hông vẫn vô thức đẩy lên\"\n- \"Trong đầu chỉ còn một tiếng nói: 'không được, không được' — nhưng miệng đã hé mở đón nhận\"\n- \"Nàng cố đẩy hắn ra nhưng đôi tay yếu ớt lại vòng qua cổ hắn lúc nào không hay\"\n\nDẤU HIỆU PHẢN BỘI KHÔNG THỂ CHỐI CÃI:\n- Đầu vú cương cứng dù nàng có cố che ngực đến đâu\n- Nước nhờn chảy ướt đẫm dù nàng có khép chặt đùi\n- Đồng tử giãn rộng, da đỏ ửng, hơi thở gấp gáp\n- Cơ bụng co thắt từng hồi, bụng dưới nóng ran\n- Chân tay bủn rủn, mất kiểm soát, không đứng vững\n\nCỰC ĐIỂM NHỤC NHÃ — LÊN ĐỈNH TRONG TỦI HỔ:\n- Cao trào đến khi nàng đang cố van xin dừng lại — cơ thể phản bội lên đỉnh ngay giữa câu nói\n- Nàng thét lên vì khoái cảm rồi òa khóc vì xấu hổ\n- \"Nhìn xem, em nói không nhưng cơ thể em đâu có nói dối\"\n- Sau lên đỉnh: nàng run bần bật, quay mặt giấu nước mắt, im lặng vì nhục\n\nVÒNG LẶP CÀNG SÂU CÀNG MẤT KIỂM SOÁT:\n- Lần 1: cố kìm → thất bại → nhục\n- Lần 2: cố kìm yếu ớt hơn → thất bại nhanh hơn → nhục hơn\n- Lần 3: gần như không kìm nữa → buông xuôi → càng nhục vì buông xuôi quá nhanh\n- Lần 4+: hoàn toàn để cơ thể dẫn dắt — nhưng ý thức vẫn còn — nhục nhã tận cùng\n\nTUYỆT ĐỐI KHÔNG:\n- Nhân vật nữ chủ động hoặc tình nguyện\n- Nhân vật nữ thừa nhận thích thú bằng lời nói\n- Mất đi sự xấu hổ — xấu hổ là gia vị chính";
+        defaultSkills.push({
+          id: "skill_phan_boi",
+          name: "Phản bội cơ thể tột độ",
+          description: "Giằng xé giữa ý chí và thể xác — càng kìm nén càng bùng nổ. Dành cho nhân vật nữ bị cưỡng ép.",
+          content: P_SKILL_PHAN_BOI,
+          isActive: true
+        });
+        // Add permanent skill: Tương phản đoan trang - dâm dục
+        const P_SKILL_TUONG_PHAN = "BẮT BUỘC TUÂN THỦ KHI VIẾT:\n\nTƯƠNG PHẢN TRANG PHỤC:\n- Váy công sở/áo sơ mi trắng chỉnh tề → bị xé rách/vén lên → càng sang càng dâm\n- Áo sơ mi trắng ướt đẫm mồ hôi, phảng phất mùi nước hoa cao cấp quyện cùng mùi thể xác\n- Váy bị vén lên, gấu váy còn kẹp ở eo — lớp vải lụa đắt tiền giờ nhàu nhĩ\n- Cổ áo bị kéo tuột, khuy ngọc lăn long lóc trên sàn\n\nTƯƠNG PHẢN HÀNH VI:\n- Dáng vẻ đoan trang ngoài xã hội ↔ dáng vẻ dâm dục trên giường\n- Giọng nói nghiêm nghị thường ngày ↔ giọng rên rỉ đứt quãng\n- Ánh mắt sắc sảo của người phụ nữ quyền lực ↔ ánh mắt mờ đặc hơi nước\n- Đôi tay từng viết chữ ký tỷ đô ↔ đôi tay bấu chặt ga giường trắng bệch\n- Dáng đi uyển chuyển quyền quý ↔ cặp đùi run rẩy không khép nổi\n\nTƯƠNG PHẢN Ý THỨC - CƠ THỂ:\n- Trong đầu: \"Mình là mẹ, mình là vợ của người ta, mình không thể như thế này\"\n- Cơ thể: hông tự động đẩy lên, miệng há ra đón nhận\n- Kết quả: nhục nhã tột cùng khi nhận ra bản thân hai mặt\n\nCHI TIẾT GỢI SỰ ĐỐI LẬP CỦA ĐỊA VỊ:\n- Vẫn còn đeo đồng hồ/trang sức đắt tiền khi bị làm tình\n- Son môi bị nhòe dù đã trang điểm kỹ\n- Tóc vấn gọn bị xõa tung\n- Giọt mồ hôi chảy dài trên làn da trắng muốt\n- Hơi thở phả ra mùi rượu vang/hương cafe hòa cùng tiếng rên";
+        defaultSkills.push({
+          id: "skill_tuong_phan",
+          name: "Tương phản đoan trang - dâm dục",
+          description: "Dành riêng cho mẫu mẹ đoan trang — càng sang trọng càng gợi dục.",
+          content: P_SKILL_TUONG_PHAN,
+          isActive: true
+        });
         setWritingSkills(defaultSkills);
         safeSetItem("writingSkills", JSON.stringify(defaultSkills));
       }
@@ -744,11 +762,11 @@ export default function StoryEditor() {
 
   const getActiveSkillsPrompt = () => {
     // Phóng đại miêu tả skill is ALWAYS active (permanent, cannot be disabled)
-    const permanentSkill = writingSkills.find(s => s.id === "skill_phong_dai");
+    const permanentIds = ["skill_phong_dai", "skill_phan_boi", "skill_tuong_phan"];
     
     return writingSkills
-      .filter(s => s.isActive || s.id === "skill_phong_dai")
-      .map(s => `[KỸ NĂNG: ${s.name}]${s.id === "skill_phong_dai" && !s.isActive ? " [VĨNH VIỄN - KHÔNG THỂ TẮT]" : ""}\n- Mục tiêu: ${s.description}\n- Hướng dẫn thực hiện: ${s.content}`)
+      .filter(s => s.isActive || permanentIds.includes(s.id))
+      .map(s => `[KỸ NĂNG: ${s.name}]${permanentIds.includes(s.id) && !s.isActive ? " [VĨNH VIỄN - KHÔNG THỂ TẮT]" : ""}\n- Mục tiêu: ${s.description}\n- Hướng dẫn thực hiện: ${s.content}`)
       .join("\n\n");
   };
 
