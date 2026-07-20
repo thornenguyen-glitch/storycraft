@@ -547,7 +547,8 @@ export default function StoryEditor() {
 - Viết hời hợt, qua loa.
 - Dùng từ thô thiển, quê mùa.
 - Bỏ qua cơ hội phóng đại.
-- Kết thúc cảnh nóng đột ngột.`,
+- Kết thúc cảnh nóng đột ngột.
+- LẶP LẠI CÙNG MỘT TỪ/CỤM TỪ MIÊU TẢ TRONG CÙNG MỘT ĐOẠN. Mỗi câu phải mang một hình ảnh, một so sánh MỚI. Ví dụ: đã dùng "căng tròn như quả bưởi" ở câu trước thì câu sau phải dùng hình ảnh khác như "đầy đặn như trái đào", "cứng cáp tựa tác phẩm điêu khắc". TUYỆT ĐỐI KHÔNG REPLAY cùng một phép so sánh.`
             isActive: true
           }
         ];
