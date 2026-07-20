@@ -491,67 +491,17 @@ export default function StoryEditor() {
             description: "Lời thoại ngắn gọn, thâm thuý, phù hợp với thân phận và có nhiều tầng nghĩa ẩn dụ che giấu ý định thật.",
             content: "NGUYÊN TẮC HỘI THOẠI: Lời đối thoại giữa các nhân vật phải sắc bén, súc tích, tránh dông dài vô nghĩa. Nhân vật mạnh nói lời uy áp, nhân vật nguy hiểm nói lời ẩn ý, giả tạo. Hãy để các nhân vật giao tiếp bằng ánh mắt, cử chỉ nhỏ đan xen kẽ trong lúc nói chuyện.",
             isActive: false
-          },
-          {
-            id: "skill_phong_dai",
-            name: "Phóng đại miêu tả",
-            description: "Khuếch đại đường cong, âm thanh, cảm giác và phản ứng trong cảnh nóng — dùng hyperbole để tăng kịch tính và gợi hình cực dâm.",
-            content: `BẠN PHẢI TUÂN THỦ TUYỆT ĐỐI CÁC QUY TẮC SAU KHI VIẾT:
-
-1. PHÓNG ĐẠI ĐƯỜNG CONG & VÓC DÁNG:
-- Miêu tả các đường cong cơ thể với sự phóng đại gợi cảm, KẾT HỢP cả hình ảnh cụ thể lẫn chất liệu cao cấp:
-  . Vòng eo: "thon nhỏ chỉ bằng một gang tay", "nhỏ như chỉ cần một bàn tay là ôm trọn".
-  . Cặp nhũ hoa: "căng tròn nõn nà như hai quả bưởi mọng nước", "căng tràn sức sống, đầu vú hồng hào như nụ đào".
-  . Cặp mông: "căng tròn nở nang như hai quả dưa hấu", "căng tròn như đúc tạc bởi bàn tay của tạo hóa", "sánh đôi đầy đặn".
-  . Cặp đùi: "nõn nà căng tràn nhựa sống", "thon dài nuột nà như hai cột ngọc".
-  . Tấm lưng: "mềm mại uốn cong như dải lụa đào", "lưng trần trắng ngần".
-  . Thân hình: "nở nang như tượng tạc", "bốc lửa", "đường cong chữ S hoàn hảo".
-- Dùng các từ: căng tràn, nõn nà, mềm mại, đầy đặn, nở nang, nuột nà, căng tròn, trắng ngần, hồng hào.
-
-2. PHÓNG ĐẠI ÂM THANH:
-- Khuếch đại âm thanh: "tiếng rên nghẹn ngào vang vọng", "âm thanh ướt át hòa cùng tiếng thở dốc dồn dập", "tiếng nước phòm bép tách tách không ngớt".
-- Các từ gợi âm: vang vọng, nghẹn ngào, dồn dập, phòm bép, tách tách, ướt át.
-
-3. PHÓNG ĐẠI CẢM GIÁC — CỰC DÂM:
-- Cảm giác được đẩy lên tột cùng, miêu tả sự phản bội của cơ thể:
-  . "Khoái cảm như hàng vạn con kiến bò từ xương sống lan tỏa khắp tứ chi"
-  . "Luồng điện cực mạnh phóng dọc từ não xuống tận tử cung, khiến toàn thân co giật không kiểm soát"
-  . "Cảm giác tê dại ngọt ngào như có hàng ngàn chiếc lông vũ đồng thời khẽ lướt trên làn da"
-  . "Dòng khoái cảm mãnh liệt như thủy triều dâng trào, cuốn phăng mọi lý trí"
-  . "Sự sung sướng như một cơn lốc xoáy hút nàng vào vòng xoáy mất kiểm soát"
-  . "Khoái cảm tột đỉnh như một tiếng nổ âm thầm bên trong cơ thể, khiến nàng tan chảy ra từng mảnh"
-- Nhấn mạnh sự tương phản: bên ngoài cố kìm nén (cắn môi, nắm chặt tay, nghiến răng) nhưng bên trong bão tố, tan chảy, rã rời.
-- Dùng từ cực mạnh: bùng nổ, vỡ òa, nhấn chìm, cuốn phăng, tan chảy, tê tái, rã rời, co giật, lên đỉnh.
-
-4. PHÓNG ĐẠI PHẢN ỨNG — DÂM DỤC TỘT ĐỘ:
-- Phản ứng cơ thể không kiểm soát, càng cố kìm càng lộ rõ:
-  . "Mắt nàng trợn ngược, môi mím chặt cố kìm tiếng rên nhưng rốt cuộc vẫn bật ra nghẹn ướt run rẩy"
-  . "Cơ thể nàng cong lên như cánh cung bị kéo căng hết cỡ, hông giật lên từng hồi không tự chủ"
-  . "Hơi thở đứt quãng, vừa thở vừa rên, vừa cố nói 'không' nhưng âm thanh phát ra lại là tiếng rên dài đầy ham muốn"
-  . "Nghiến chặt răng đến mức khớp hàm đau nhức, nhưng nước mắt khoái cảm vẫn trào ra từ khóe mi"
-  . "Bàn tay bấu chặt ga giường, khớp ngón tay trắng bệch, cặp đùi giật bắn từng hồi"
-  . "Miệng lẩm bẩm 'không, không thể' xen giữa tiếng thét nghẹn ngào khi lên đỉnh"
-- NHẤN MẠNH: Nhân vật nữ TUYỆT ĐỐI KHÔNG chủ động/chấp thuận — nhưng cơ thể phản bội một cách nhục nhã.
-
-5. PHÓNG ĐẠI THỜI GIAN & KHÔNG GIAN:
-- Thời gian: "từng giây kéo dài như vô tận", "thời gian như ngừng trôi", "một khắc như ngàn thu".
-- Không gian: "căn phòng như thu nhỏ lại chỉ còn tiếng thở của nhau", "cả thế giới như ngừng quay".
-
-6. BIỆN PHÁP SO SÁNH ƯU TIÊN:
-- So sánh với trái cây: bưởi, dưa hấu, đào, mận.
-- So sánh với chất liệu cao cấp: lụa, nhung, ngọc, gấm, men sứ.
-- So sánh với thiên nhiên: mây, nước, gió, sóng, lửa, thủy triều.
-- So sánh với điêu khắc: tượng tạc, đúc tạc, bàn tay tạo hóa.
-
-7. TUYỆT ĐỐI CẤM:
-- Viết hời hợt, qua loa.
-- Dùng từ thô thiển, quê mùa.
-- Bỏ qua cơ hội phóng đại.
-- Kết thúc cảnh nóng đột ngột.
-- LẶP LẠI CÙNG MỘT TỪ/CỤM TỪ MIÊU TẢ TRONG CÙNG MỘT ĐOẠN. Mỗi câu phải mang một hình ảnh, một so sánh MỚI. Ví dụ: đã dùng "căng tròn như quả bưởi" ở câu trước thì câu sau phải dùng hình ảnh khác như "đầy đặn như trái đào", "cứng cáp tựa tác phẩm điêu khắc". TUYỆT ĐỐI KHÔNG REPLAY cùng một phép so sánh.`
-            isActive: true
           }
         ];
+        // Add permanent skill: Phóng đại miêu tả
+        const P_SKILL_PHONG_DAI = "BẠN PHẢI TUÂN THỦ TUYỆT ĐỐI CÁC QUY TẮC SAU KHI VIẾT:\n\n1. PHÓNG ĐẠI ĐƯỜNG CONG & VÓC DÁNG:\n- Miêu tả các đường cong cơ thể với sự phóng đại gợi cảm, KẾT HỢP cả hình ảnh cụ thể lẫn chất liệu cao cấp:\n  . Vòng eo: \"thon nhỏ chỉ bằng một gang tay\", \"nhỏ như chỉ cần một bàn tay là ôm trọn\".\n  . Cặp nhũ hoa: \"căng tròn nõn nà như hai quả bưởi mọng nước\", \"căng tràn sức sống, đầu vú hồng hào như nụ đào\".\n  . Cặp mông: \"căng tròn nở nang như hai quả dưa hấu\", \"căng tròn như đúc tạc bởi bàn tay của tạo hóa\", \"sánh đôi đầy đặn\".\n  . Cặp đùi: \"nõn nà căng tràn nhựa sống\", \"thon dài nuột nà như hai cột ngọc\".\n  . Tấm lưng: \"mềm mại uốn cong như dải lụa đào\", \"lưng trần trắng ngần\".\n  . Thân hình: \"nở nang như tượng tạc\", \"bốc lửa\", \"đường cong chữ S hoàn hảo\".\n- Dùng các từ: căng tràn, nõn nà, mềm mại, đầy đặn, nở nang, nuột nà, căng tròn, trắng ngần, hồng hào.\n\n2. PHÓNG ĐẠI ÂM THANH:\n- Khuếch đại âm thanh: \"tiếng rên nghẹn ngào vang vọng\", \"âm thanh ướt át hòa cùng tiếng thở dốc dồn dập\", \"tiếng nước phòm bép tách tách không ngớt\".\n- Các từ gợi âm: vang vọng, nghẹn ngào, dồn dập, phòm bép, tách tách, ướt át.\n\n3. PHÓNG ĐẠI CẢM GIÁC — CỰC DÂM:\n- Cảm giác được đẩy lên tột cùng, miêu tả sự phản bội của cơ thể:\n  . \"Khoái cảm như hàng vạn con kiến bò từ xương sống lan tỏa khắp tứ chi\"\n  . \"Luồng điện cực mạnh phóng dọc từ não xuống tận tử cung, khiến toàn thân co giật không kiểm soát\"\n  . \"Cảm giác tê dại ngọt ngào như có hàng ngàn chiếc lông vũ đồng thời khẽ lướt trên làn da\"\n  . \"Dòng khoái cảm mãnh liệt như thủy triều dâng trào, cuốn phăng mọi lý trí\"\n  . \"Sự sung sướng như một cơn lốc xoáy hút nàng vào vòng xoáy mất kiểm soát\"\n  . \"Khoái cảm tột đỉnh như một tiếng nổ âm thầm bên trong cơ thể, khiến nàng tan chảy ra từng mảnh\"\n- Nhấn mạnh sự tương phản: bên ngoài cố kìm nén (cắn môi, nắm chặt tay, nghiến răng) nhưng bên trong bão tố, tan chảy, rã rời.\n- Dùng từ cực mạnh: bùng nổ, vỡ òa, nhấn chìm, cuốn phăng, tan chảy, tê tái, rã rời, co giật, lên đỉnh.\n\n4. PHÓNG ĐẠI PHẢN ỨNG — DÂM DỤC TỘT ĐỘ:\n- Phản ứng cơ thể không kiểm soát, càng cố kìm càng lộ rõ:\n  . \"Mắt nàng trợn ngược, môi mím chặt cố kìm tiếng rên nhưng rốt cuộc vẫn bật ra nghẹn ướt run rẩy\"\n  . \"Cơ thể nàng cong lên như cánh cung bị kéo căng hết cỡ, hông giật lên từng hồi không tự chủ\"\n  . \"Hơi thở đứt quãng, vừa thở vừa rên, vừa cố nói 'không' nhưng âm thanh phát ra lại là tiếng rên dài đầy ham muốn\"\n  . \"Nghiến chặt răng đến mức khớp hàm đau nhức, nhưng nước mắt khoái cảm vẫn trào ra từ khóe mi\"\n  . \"Bàn tay bấu chặt ga giường, khớp ngón tay trắng bệch, cặp đùi giật bắn từng hồi\"\n  . \"Miệng lẩm bẩm 'không, không thể' xen giữa tiếng thét nghẹn ngào khi lên đỉnh\"\n- NHẤN MẠNH: Nhân vật nữ TUYỆT ĐỐI KHÔNG chủ động/chấp thuận — nhưng cơ thể phản bội một cách nhục nhã.\n\n5. PHÓNG ĐẠI THỜI GIAN & KHÔNG GIAN:\n- Thời gian: \"từng giây kéo dài như vô tận\", \"thời gian như ngừng trôi\", \"một khắc như ngàn thu\".\n- Không gian: \"căn phòng như thu nhỏ lại chỉ còn tiếng thở của nhau\", \"cả thế giới như ngừng quay\".\n\n6. BIỆN PHÁP SO SÁNH ƯU TIÊN:\n- So sánh với trái cây: bưởi, dưa hấu, đào, mận.\n- So sánh với chất liệu cao cấp: lụa, nhung, ngọc, gấm, men sứ.\n- So sánh với thiên nhiên: mây, nước, gió, sóng, lửa, thủy triều.\n- So sánh với điêu khắc: tượng tạc, đúc tạc, bàn tay tạo hóa.\n\n7. TUYỆT ĐỐI CẤM:\n- Viết hời hợt, qua loa.\n- Dùng từ thô thiển, quê mùa.\n- Bỏ qua cơ hội phóng đại.\n- Kết thúc cảnh nóng đột ngột.\n- LẶP LẠI CÙNG MỘT TỪ/CỤM TỪ MIÊU TẢ TRONG CÙNG MỘT ĐOẠN. Mỗi câu phải mang một hình ảnh, một so sánh MỚI.";
+        defaultSkills.push({
+          id: "skill_phong_dai",
+          name: "Phóng đại miêu tả",
+          description: "Khuếch đại đường cong, âm thanh, cảm giác và phản ứng trong cảnh nóng — dùng hyperbole để tăng kịch tính và gợi hình cực dâm.",
+          content: P_SKILL_PHONG_DAI,
+          isActive: true
+        });
         setWritingSkills(defaultSkills);
         safeSetItem("writingSkills", JSON.stringify(defaultSkills));
       }
@@ -793,9 +743,12 @@ export default function StoryEditor() {
   }, [plotMap, isLoaded]);
 
   const getActiveSkillsPrompt = () => {
+    // Phóng đại miêu tả skill is ALWAYS active (permanent, cannot be disabled)
+    const permanentSkill = writingSkills.find(s => s.id === "skill_phong_dai");
+    
     return writingSkills
-      .filter(s => s.isActive)
-      .map(s => `[KỸ NĂNG: ${s.name}]\n- Mục tiêu: ${s.description}\n- Hướng dẫn thực hiện: ${s.content}`)
+      .filter(s => s.isActive || s.id === "skill_phong_dai")
+      .map(s => `[KỸ NĂNG: ${s.name}]${s.id === "skill_phong_dai" && !s.isActive ? " [VĨNH VIỄN - KHÔNG THỂ TẮT]" : ""}\n- Mục tiêu: ${s.description}\n- Hướng dẫn thực hiện: ${s.content}`)
       .join("\n\n");
   };
 
