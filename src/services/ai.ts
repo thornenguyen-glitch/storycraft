@@ -36,11 +36,11 @@ function getDeepSeekAI(): OpenAI | null {
 
 // Map Gemini model names to DeepSeek models
 const GEMINI_TO_DEEPSEEK_MODEL: Record<string, string> = {
-  "gemini-3.1-pro-preview": "deepseek-chat",
-  "gemini-3.1-flash-lite-preview": "deepseek-chat",
-  "gemini-3-flash-preview": "deepseek-chat",
-  "gemini-2.5-flash-image": "deepseek-chat",
-  "gemini-2.0-flash": "deepseek-chat",
+  "gemini-3.1-pro-preview": "deepseek-v4-pro",
+  "gemini-3.1-flash-lite-preview": "deepseek-v4-flash",
+  "gemini-3-flash-preview": "deepseek-v4-flash",
+  "gemini-2.5-flash-image": "deepseek-v4-flash",
+  "gemini-2.0-flash": "deepseek-v4-flash",
 };
 
 // Check if request is for image generation (Gemini-only)
@@ -134,7 +134,7 @@ RULES:
     messages.push({ role: "user", content: userContent });
   }
   
-  const model = GEMINI_TO_DEEPSEEK_MODEL[params.model] || "deepseek-chat";
+  const model = GEMINI_TO_DEEPSEEK_MODEL[params.model] || "deepseek-v4-flash";
   
   const response = await ai.chat.completions.create({
     model,
