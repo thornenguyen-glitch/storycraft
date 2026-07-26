@@ -520,6 +520,15 @@ export default function StoryEditor() {
           content: P_SKILL_TUONG_PHAN,
           isActive: true
         });
+        // Add permanent skill: Vi mô phân giải
+        const P_SKILL_VI_MO = "BẮT BUỘC TUÂN THỦ KHI VIẾT CẢNH NÓNG:\n\nNGUYÊN TẮC VI MÔ: Mỗi hành động tình dục phải được chia thành 5-8 giai đoạn siêu chi tiết. Không gộp chung, không tóm tắt.\n\n7 TEMPLATE HÀNH ĐỘNG:\n\n1. HÔN (7 giai đoạn): Tiếp cận → Chạm môi (khô, ấm, mẹ mím) → Ngậm môi dưới mút nhẹ (chụt chụt, nước bọt) → Mút lưỡi (lưỡi quấn, nước bọt tràn) → Khẩu dâm (con thì thầm, mẹ nghiến răng) → Nước bọt & liếm (sợi kéo dài, liếm cằm) → Chuyển (môi sưng đỏ)\n\n2. BÓP VÚ (8 giai đoạn): Tiếp cận → Chạm đầu (lòng bàn tay áp, nóng) → Mơn trớn (lướt chậm từ chân lên đỉnh) → Bóp nhẹ (năm ngón siết, thịt lún) → Khẩu dâm → Đại lực bóp (bóp mạnh, nhào nặn, run) → Biến tấu (vê, kéo, ấn đầu vú) → Chuyển\n\n3. SỜ LỒN (7 giai đoạn): Tiếp cận → Chạm đầu (lông mu, khe hẹp, ướt) → Mơn trớn (lướt dọc môi hoa) → Tác động nhẹ (hột le, một đốt ngón tay) → Khẩu dâm → Tăng lực (vào sâu, day mạnh) → Kết thúc (rút ra, bóng loáng dâm thủy)\n\n4. ĐỤ (8 giai đoạn): Tiếp cận → Chạm đầu (quy đầu ấn môi hoa) → Vào từng mm (chậm, từng milimet, cảm giác đầy) → Vào sâu (đường gân cọ thành trong) → Vào hết (cực vật nằm trong, nóng) → Di chuyển chậm (phòm, ngực nảy) → Tăng tốc (phòm liên hồi) → Xuất tinh (tinh dịch nóng, nhiều luồng)\n\nINSIDE-OUTSIDE CONTRAST (BẮT BUỘC MỖI GIAI ĐOẠN):\nMỗi giai đoạn phải có ít nhất một cặp tương phản ngoài-trong của mẹ:\n- Bên ngoài: nghiến răng, mắng \"Đồ súc sinh!\", tay đẩy ra, lắc đầu \"Không\", cắn môi chảy máu, im lặng lạnh lùng, mặt lạnh như tiền\n- Bên trong: đầu vú cứng, dâm thủy rỉ, tim đập nhanh, mặt đỏ, đùi run, cơ thể mở, hơi thở gấp, da nóng bừng, bụng co thắt, dâm thủy chảy xuống đùi\n- Công thức: Câu tả ngoài → Ngay sau: câu tả trong mâu thuẫn\n- Ví dụ: \"Mẹ nghiến răng, mắt long lên gào 'Đồ súc sinh!' — nhưng dưới bàn tay con, đầu vú mẹ càng cứng hơn, và một dòng dâm thủy ấm nữa lại rỉ ra.\"\n\nMỞ RỘNG TEMPLATE: Được bỏ/thêm/đảo/lặp giai đoạn tuỳ ý, miễn là ≥5 giai đoạn mỗi hành động.";
+        defaultSkills.push({
+          id: "skill_vi_mo",
+          name: "Vi mô phân giải",
+          description: "Phân tách mọi hành động tình dục thành 5-8 micro-beat siêu chi tiết. Kèm Inside-Outside Contrast bắt buộc.",
+          content: P_SKILL_VI_MO,
+          isActive: true
+        });
         setWritingSkills(defaultSkills);
         safeSetItem("writingSkills", JSON.stringify(defaultSkills));
       }
@@ -762,7 +771,7 @@ export default function StoryEditor() {
 
   const getActiveSkillsPrompt = () => {
     // Phóng đại miêu tả skill is ALWAYS active (permanent, cannot be disabled)
-    const permanentIds = ["skill_phong_dai", "skill_phan_boi", "skill_tuong_phan"];
+    const permanentIds = ["skill_phong_dai", "skill_phan_boi", "skill_tuong_phan", "skill_vi_mo"];
     
     return writingSkills
       .filter(s => s.isActive || permanentIds.includes(s.id))
