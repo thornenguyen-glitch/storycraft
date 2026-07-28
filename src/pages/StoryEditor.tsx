@@ -529,6 +529,15 @@ export default function StoryEditor() {
           content: P_SKILL_VI_MO,
           isActive: true
         });
+        // Add permanent skill: Viết như người
+        const P_SKILL_VIET_NHU_NGUOI = "BẮT BUỘC TUÂN THỦ CÁC QUY TẮC SAU ĐỂ VĂN KHÔNG CÓ MÙI AI:\n\nCẤM DÙNG CÁC TỪ/CỤM SAU:\n- Khoa trương: \"bước vào thế giới\", \"mở ra chương mới\", \"bức tranh toàn cảnh\", \"dấu ấn khó phai\", \"chạm đến trái tim\", \"hành trình cảm xúc\", \"mở ra cánh cửa\", \"làn gió mới\", \"bản hòa ca\", \"thổi hồn vào\", \"tỏa sáng rực rỡ\", \"nâng tầm\", \"vượt xa kỳ vọng\", \"kho tàng tri thức\"\n- Triết lý rỗng: \"có thể nói rằng\", \"không thể phủ nhận\", \"có ý nghĩa sâu sắc\", \"như chúng ta đã biết\"\n- Làm màu: \"trong bối cảnh\", \"một cách tổng thể\", \"đáng chú ý là\", \"có thể thấy rằng\", \"thật sự rất\", \"vô cùng quan trọng\", \"mọi giác quan\", \"đắm chìm trong\" (tối đa 1 lần/cảnh)\n- Cấu trúc: \"không phải X... mà là Y\", liệt kê 3 thứ (Rule of Three, tối đa 1 lần/bài), \"từ...đến...\" giả tạo\n- Dự đoán tương lai: \"có lẽ đây sẽ trở thành\", \"rồi thời gian sẽ trả lời\", \"chỉ tương lai mới biết\"\n- Self-labeling: \"điều quan trọng là\", \"khoảnh khắc đặc biệt\", \"đây mới là điều...\"\n- Infomercial hook: \"nhưng khoan đã\", \"điều bất ngờ là\", \"cái hay là\"\n- Narrator bình luận: \"nàng không biết rằng\", \"giá mà nàng biết\", \"số phận đã sắp đặt\"\n\nNGUYÊN TẮC CẤU TRÚC CÂU:\n- KHÔNG viết câu đầy đủ CN-VN liên tục — được phép bỏ chủ ngữ khi đã rõ (tiếng Việt tự nhiên)\n- Câu phải dài ngắn đa dạng: phải có câu <5 chữ (câu đặc biệt/câu cụt) và câu >30 chữ đan xen\n- Đoạn văn phải có độ dài khác nhau: có đoạn 1 câu, có đoạn 5-8 câu\n- Giảm 70% từ nối (thì, là, mà, rằng, và, nhưng, vì thế, do đó, bởi vì) — dùng dấu phẩy hoặc xuống dòng\n- KHÔNG mào đầu trước ý chính — vào thẳng vấn đề\n- KHÔNG kết luận/tổng kết cuối đoạn — kết thúc đột ngột cũng được\n- Tỉ lệ: Hành động 60% - Tả gợi 30% - Cảm xúc 10%. KHÔNG tả quá nhiều\n\nNGUYÊN TẮC HỘI THOẠI:\n- Câu thoại ngắn: 3-7 từ. Một câu là đủ, hai câu là nhiều\n- KHÔNG giải thích trạng thái qua lời thoại. Nếu đau thì rên — đừng nói \"đau quá\"\n- Im lặng là câu trả lời mạnh nhất\n- Xấu hổ = im lặng + câu cụt + hành động. KHÔNG diễn thuyết\n- Trong NSFW: nhân vật nữ TUYỆT ĐỐI KHÔNG nói câu dài giải thích cảm xúc — chỉ rên, thở gấp, hoặc im lặng\n- Không để lời thoại lấn vào phân tích tâm lý — phần đó phải để narrative tả\n\nNGUYÊN TẮC NSFW:\n- Cảm xúc mâu thuẫn phải xuất hiện ĐỒNG THỜI: \"nàng ghét cái cảm giác này — nhưng nàng muốn nó tiếp tục\" — dùng \"nhưng\", \"thế mà\" nối trong cùng một khoảnh khắc\n- Mỗi khoảnh khắc cao trào CHỈ 1-2 giác quan, không tả tất cả\n- Hậu cảnh nóng: KHÔNG gọn gàng, KHÔNG triết lý — giữ cảm xúc thô (shock, shame, khóc, run, im lặng)\n- KHÔNG tả \"bầu không khí\" — tả hành động\n- \"cảm thấy\" → thay bằng hành động: \"nàng sợ\" → \"tay nàng run\"\n- Không \"cả hai đều...\" — chỉ tả một người (ưu tiên nữ)\n\nĐỊNH DẠNG:\n- Viết văn xuôi liền mạch. Cấm heading, bullet, bảng, dấu `---`, chú thích *in nghiêng* trong truyện\n- Không em dash (—) làm dấu mô tả";
+        defaultSkills.push({
+          id: "skill_viet_nhu_nguoi",
+          name: "Viết như người",
+          description: "Loại bỏ toàn bộ dấu hiệu AI trong văn — từ vựng cấm, cấu trúc câu, hội thoại tự nhiên, NSFW pattern.",
+          content: P_SKILL_VIET_NHU_NGUOI,
+          isActive: true
+        });
         setWritingSkills(defaultSkills);
         safeSetItem("writingSkills", JSON.stringify(defaultSkills));
       }
@@ -771,7 +780,7 @@ export default function StoryEditor() {
 
   const getActiveSkillsPrompt = () => {
     // Phóng đại miêu tả skill is ALWAYS active (permanent, cannot be disabled)
-    const permanentIds = ["skill_phong_dai", "skill_phan_boi", "skill_tuong_phan", "skill_vi_mo"];
+    const permanentIds = ["skill_phong_dai", "skill_phan_boi", "skill_tuong_phan", "skill_vi_mo", "skill_viet_nhu_nguoi"];
     
     return writingSkills
       .filter(s => s.isActive || permanentIds.includes(s.id))
