@@ -1411,6 +1411,43 @@ export default function StoryEditor() {
     }
   };
 
+  const handleExportTxt = async () => {
+    try {
+      // Build TXT content from all volumes
+      let txtContent = "";
+      for (const volume of volumes) {
+        txtContent += `=== ${volume.title} ===\n\n`;
+        for (const chapter of volume.chapters) {
+          txtContent += `--- ${chapter.title} ---\n\n`;
+          txtContent += chapter.content || "(Chưa có nội dung)";
+          txtContent += "\n\n";
+        }
+        txtContent += "\n";
+      }
+
+      const blob = new Blob([txtContent], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      const safeTitle = (volumes[0]?.title || "truyen").replace(/[^a-zA-Z0-9_\s]/g, "").trim() || "truyen";
+      a.download = `${safeTitle}-${new Date().toISOString().slice(0, 10)}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setShowMenu(false);
+    } catch (error) {
+      console.error("TXT Export failed", error);
+      setConfirmDialog({
+        isOpen: true,
+        title: "Lỗi",
+        message: "Không thể xuất file TXT. Vui lòng thử lại.",
+        isAlert: true,
+        onConfirm: () => setConfirmDialog(null)
+      });
+    }
+  };
+
   const toggleVolume = (volumeId: string) => {
     setExpandedVolumes(prev => 
       prev.includes(volumeId) ? prev.filter(id => id !== volumeId) : [...prev, volumeId]
@@ -1673,6 +1710,14 @@ export default function StoryEditor() {
                   >
                     <Download size={18} className="text-emerald-500" />
                     Xuất file truyện (.json)
+                  </button>
+
+                  <button 
+                    onClick={handleExportTxt}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-stone-700 hover:bg-stone-50 transition-colors"
+                  >
+                    <FileText size={18} className="text-blue-500" />
+                    Xuất file truyện (.txt)
                   </button>
 
                   <button 
