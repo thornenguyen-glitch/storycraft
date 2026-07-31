@@ -136,6 +136,9 @@ RULES:
   
   const model = GEMINI_TO_DEEPSEEK_MODEL[params.model] || "deepseek-v4-flash";
   
+  // DeepSeek v4-pro: thinking mode is ENABLED by default with "high" effort.
+  // This generates hidden reasoning tokens that cost money but add no visible value
+  // for creative writing. Disabling saves ~30-50% token cost per request.
   const response = await ai.chat.completions.create({
     model,
     messages,
@@ -143,6 +146,8 @@ RULES:
     max_tokens: params.config?.maxOutputTokens || 8192,
     frequency_penalty: 0.4,
     presence_penalty: 0.3,
+    // @ts-expect-error DeepSeek-specific: disable hidden reasoning tokens
+    thinking: { type: "disabled" },
   });
   
   return response.choices[0]?.message?.content || "";
