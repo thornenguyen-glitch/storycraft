@@ -792,7 +792,7 @@ YÊU CẦU ĐẦU RA:
     config: {
       systemInstruction,
       temperature: 0.8,
-      maxOutputTokens: 32768,
+      maxOutputTokens: 16384,
     }
   });
   return response.text;
@@ -863,7 +863,7 @@ ${styleInstructions ? `\nLƯU Ý VỀ VĂN PHONG:\n${styleInstructions}` : ""}
     config: {
       systemInstruction,
       temperature: 0.3,
-      maxOutputTokens: 32768,
+      maxOutputTokens: 16384,
     }
   });
   return response.text;
@@ -1162,7 +1162,7 @@ YÊU CẦU ĐẦU RA:
       systemInstruction,
       safetySettings,
       temperature: 0.8,
-      maxOutputTokens: 32768,
+      maxOutputTokens: 16384,
     }
   });
   return response.text;
