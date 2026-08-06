@@ -538,6 +538,15 @@ export default function StoryEditor() {
           content: P_SKILL_VIET_NHU_NGUOI,
           isActive: true
         });
+        // Add permanent skill: Vũ đạo giao hợp
+        const P_SKILL_VU_DAO = "BẮT BUỘC TUÂN THỦ KHI VIẾT CẢNH GIAO HỢP (THÂM NHẬP):\n\nGIẢI PHẪU MỘT NHỊP NẮC (5 PHA):\nMỗi nhịp nắc hoàn chỉnh có 5 pha. Nhịp chậm đầu cảnh = đủ 5 pha, mỗi pha tối thiểu 1 câu. Nhịp nhanh cuối cảnh = gộp pha:\n1. RÚT RA: từ từ hay nhanh. Dịch kéo theo, thành trong bám níu. Biến thể: rút nhanh (bắn nước) / rút chậm (kéo dài) / rút nửa rồi vào lại\n2. TREO: quy đầu ở ngay cửa, chưa vào. Hơi nóng tỏa. Mẹ tưởng sắp dừng. Biến thể: treo lâu / treo rồi cọ môi hoa / treo rồi xoay\n3. ĐẨY VÀO: từng milimet. Độ khít, độ trơn. Biến thể: vào thẳng / vào nghiêng / vào nông / vào một hơi lút cán\n4. LÚT CÁN: háng va mông, tiếng bẹp. Vú nảy. Biến thể: lút mạnh (bụp) / lút nhẹ / lút rồi xoay hông\n5. GIỮ: khoảng dừng, bên trong co thắt. Cảm nhận từng đường gân đập. Biến thể: giữ sâu + thì thầm / giữ + day hột le / giữ rồi nhấp nhô nhẹ\n\n12 KỸ THUẬT CHỐNG LẶP (mỗi đợt sau khác đợt trước ít nhất 3 yếu tố):\n1. Đổi góc hông (xoay 15°, nghiêng, từ dưới lên, vẽ vòng tròn)\n2. Đổi độ sâu (nông → nửa → lút cán → cọ cửa rồi đâm sâu)\n3. Đổi tốc độ (chậm → nhịp đôi → dồn dập → ngắt quãng 3 nhanh 1 chậm)\n4. Đổi điểm nhấn (cọ thành trước, đâm cổ tử cung, ma sát môi hoa, ép hột le)\n5. Đổi tay (bóp vú → bấu mông → nắm tóc → ghì vai → luồn xuống bụng → nắm tay mẹ giữ chặt)\n6. Đổi chân mẹ (kẹp eo, vắt vai, duỗi thẳng, co gối, banh rộng, giơ lên trời)\n7. Đổi âm thanh (nước → thịt → rên → giường kẽo kẹt → vải → im lặng)\n8. Đổi phản ứng mẹ (nghiến răng → cắn môi → quay mặt → nước mắt → run → rên vỡ → nấc → gào nghẹn)\n9. Đổi lời thoại (con thì thầm → mẹ mắng yếu → con xin lỗi → im lặng → mẹ gọi tên chồng)\n10. Đổi môi trường (đèn hắt, mưa, điện thoại reo, tiếng bước chân, gió lùa rèm)\n11. Đổi tiết tấu câu: dài chậm (nhịp chậm) → câu cụt (nhịp nhanh) → một từ một dòng (đỉnh điểm)\n12. Đổi giác quan: xúc giác → thính giác → thị giác → khứu giác\n\nCHUYỂN TƯ THẾ (tối thiểu 150 chữ, 4 bước):\n1. Rút ra (tiếng tách, dịch chảy theo, thành trong co thắt níu)\n2. Di chuyển (tay giữ hông/eo, kéo hoặc nhấc mẹ, da trượt trên da ướt mồ hôi)\n3. Xoay/định vị (mẹ bị xoay, mặt úp gối hoặc lưng dựa ngực con)\n4. Vào lại (KHÔNG đâm thẳng — thăm dò: cọ môi hoa, trượt khe, chờ một nhịp rồi mới đẩy)\n\nĐAN XEN HÀNH ĐỘNG: Lúc nào cũng có ít nhất 2 điểm chạm song song (hông + tay, hoặc hông + miệng). Mỗi 5-10 nhịp đổi 1 điểm chạm phụ. Nắc + mẹ vùng vẫy = góc vào lệch → chống lặp miễn phí.\n\nCHUỖI PHẢN ỨNG DÂY CHUYỀN: Vú nảy → mẹ thấy thân mình bị nắc → nhục, cắn môi → tiếng rên thoát kẽ răng → con nghe → nắc nhanh hơn → vú nảy mạnh hơn → mẹ gồng bụng → co thắt siết → con rên khàn → mẹ nước mắt trào...\n\nBẢNG TỪ CHỐNG LẶP: đẩy vào (trượt/vào/lách/ấn → đâm/thọc/nhồi → cắm/xuyên/nện). rút ra (lùi/tuột → kéo/giật/trồi → bứt/rút phắt). nắc (nhấp/đưa đẩy → thúc/ra vào → đóng cọc/dập/điên cuồng). Không dùng từ cấp mạnh ở đầu cảnh.\n\nĐỊNH LƯỢNG: Cảnh giao hợp chính 3000-5000 chữ. Thăm dò 15%, nhịp chậm 20%, leo thang 25%, chùng+chuyển tư thế 15%, đợt 2 cao hơn 25%.";
+        defaultSkills.push({
+          id: "skill_vu_dao",
+          name: "Vũ đạo giao hợp",
+          description: "Biên đạo từng động tác — giải phẫu một nhịp nắc, 12 kỹ thuật chống lặp, chuyển tư thế, chuỗi phản ứng dây chuyền.",
+          content: P_SKILL_VU_DAO,
+          isActive: true
+        });
         setWritingSkills(defaultSkills);
         safeSetItem("writingSkills", JSON.stringify(defaultSkills));
       }
@@ -780,7 +789,7 @@ export default function StoryEditor() {
 
   const getActiveSkillsPrompt = () => {
     // Phóng đại miêu tả skill is ALWAYS active (permanent, cannot be disabled)
-    const permanentIds = ["skill_phong_dai", "skill_phan_boi", "skill_tuong_phan", "skill_vi_mo", "skill_viet_nhu_nguoi"];
+    const permanentIds = ["skill_phong_dai", "skill_phan_boi", "skill_tuong_phan", "skill_vi_mo", "skill_viet_nhu_nguoi", "skill_vu_dao"];
     
     return writingSkills
       .filter(s => s.isActive || permanentIds.includes(s.id))
