@@ -456,13 +456,23 @@ export default function StoryEditor() {
       if (savedFanfic) setFanficContext(savedFanfic);
 
       const savedSkills = await safeGetItem("writingSkills");
+      let forceReload = false;
       if (savedSkills) {
         try {
-          setWritingSkills(JSON.parse(savedSkills));
+          let skills = JSON.parse(savedSkills);
+          const hasPlaceholder = skills.some((s: WritingSkill) => 
+            s.id?.startsWith("skill_") && s.content === "Sẽ được cập nhật khi vào StoryEditor"
+          );
+          if (hasPlaceholder) {
+            forceReload = true;
+          } else {
+            setWritingSkills(skills);
+          }
         } catch (e) {
           console.error(e);
         }
-      } else {
+      }
+      if (!savedSkills || forceReload) {
         const defaultSkills: WritingSkill[] = [
           {
             id: "skill_show_dont_tell",
