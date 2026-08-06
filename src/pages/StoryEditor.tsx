@@ -557,6 +557,15 @@ export default function StoryEditor() {
           content: P_SKILL_VU_DAO,
           isActive: true
         });
+        // Add permanent skill: Cảnh nóng cực dâm
+        const P_SKILL_CUC_DAM = "BẮT BUỘC TUÂN THỦ KHI VIẾT CẢNH NÓNG — MỤC TIÊU: DÂM DỤC TỘT ĐỘ\n\nCHẾ ĐỘ: Xác định CƯỠNG ÉP (A) hay ĐỒNG THUẬN (B). Một cảnh CHỈ dùng MỘT chế độ.\nA: kháng cự, căm ghét, nhục nhã. Cơ thể phản bội. Nghiến răng, cắn môi, quay mặt, khóc. Kết thúc: hổ thẹn, im lặng.\nB: muốn, đón nhận, chủ động hoặc bị động nhưng đồng ý. Thở gấp vì sướng. Kết thúc: thỏa mãn, âu yếm.\n\nQUY TẮC CHUNG: Mọi nhân vật nữ (mẹ, cô, bác, dì, chị, vợ, người yêu...). Tả dấu hiệu cơ thể — KHÔNG kể cảm xúc. Mỗi hành động → một phản ứng cơ thể. Mỗi đoạn ít nhất 2 giác quan.\n\n5 GIAI ĐOẠN CỰC KHOÁI (mỗi giai đoạn 300-500 CHỮ):\n\nGĐ1 — BÁO HIỆU:\nDa đỏ ửng từ cổ xuống ngực xuống bụng — hồng đậm loang dần. Hơi thở gấp dần. Cơ bụng co thắt nhẹ. Mắt mờ, đồng tử giãn. Đầu vú căng cứng. Dâm thủy rỉ.\nA thêm: nghiến răng, cắn môi đến rách, cắn mu bàn tay.\nB thêm: mắt lim dim, môi hé mở, tay kéo đối phương lại gần.\n\nGĐ2 — DÂNG TRÀO:\nToàn thân run từ đùi → bụng → ngực → vai. Tử cung co thắt: bóp chặt, nới, bóp chặt, nới. Lưng cong, ngực ưỡn, hông đẩy. Tiếng rên thoát ra không kìm được. Nước mắt ứa. Đầu vú đỏ au.\n\nGĐ3 — BÙNG NỔ (DÀI NHẤT):\nToàn thân: Lưng cong tối đa rời giường, cổ ngửa, yết hầu nhô. Miệng há, lưỡi thè ra dài ngoằng ướt bóng run rẩy. Mắt trợn ngược chỉ còn lòng trắng đỏ ngầu. Nước dãi ấm đặc chảy dọc cằm kéo sợi nhỏ giọt xuống ngực. Hàm dưới trễ, không ngậm được. Bụng gồng cứng, rốn co rút mím chặt. Mười ngón chân quặp — duỗi cứng — quặp. Tay cào cấu lung tung.\nÂm thanh: A — rú dài lạc giọng. B — thét sung sướng gọi tên.\nBên trong: tử cung co thắt dữ dội, dâm thủy ồ ạt nóng hổi phun ra thành dòng ướt đẫm. Bọt trắng. Hơi nóng tỏa.\n\nGĐ4 — DƯ CHẤN:\nMềm nhũn, nặng trịch, không sức. Chân tay run nhẹ không dứt. Tử cung thắt thưa dần. Hơi thở trở lại từng hơi dài. Dâm thủy rỉ từng giọt.\n\nGĐ5 — SAU CÙNG:\nA: lắc đầu, đỏ mặt xấu hổ, quay đi, nước mắt lặng lẽ, im lặng, muốn tắm.\nB: thở dài thỏa mãn, rúc vào, tay quấn, chân quấn, \"tuyệt quá...\", \"làm em muốn chết...\"\n\nKHẨU DÂM THEO CHẾ ĐỘ:\nA (nam thì thầm van nỉ): \"Em ướt quá...\", \"Cô nghe tiếng nước không...\", \"Chị siết em này...\", \"Nhìn nước chảy ướt hết tay em này...\"\nNữ đáp: nghiến răng, \"im đi\", \"đừng nói\", lắc đầu, nấc.\nB (nam): \"Em thích không?\", \"Nơi này... hay nơi này?\", \"Nhìn anh đi...\", \"Em đẹp quá...\"\nNữ đáp: \"thích...\", \"nữa đi...\", \"anh ơi...\", \"chỗ đó...\" gọi tên khi lên đỉnh.\n\nÂM THANH DÂM DỤC:\nThịt: phòm, bốp, chụt, bẹp, phụt — thay đổi liên tục.\nNước: sùng sục, chít, tách, rỏ giọt.\nNgười A: rên → nấc → rú → khóc → im lặng.\nNgười B: rên → thở gấp → gọi tên → thét → thở dài.\n\nXƯNG HÔ THEO NHÂN VẬT: mẹ-con / cô-cháu / chị-em / sếp-em / vợ-chồng / người yêu.\n\nĐỊNH LƯỢNG: Cảnh tối thiểu 4000 chữ. Cảnh lên đỉnh riêng tối thiểu 1500 chữ.\nCẤM: tóm tắt, nhảy cóc, lặp từ.";
+        defaultSkills.push({
+          id: "skill_cuc_dam",
+          name: "Cảnh nóng cực dâm",
+          description: "Tạo sự dâm dục tột độ — 2 chế độ cưỡng ép/đồng thuận, 5 giai đoạn cực khoái, mất kiểm soát từng bộ phận, âm thanh dâm dục, khẩu dâm theo nhân vật.",
+          content: P_SKILL_CUC_DAM,
+          isActive: true
+        });
         setWritingSkills(defaultSkills);
         safeSetItem("writingSkills", JSON.stringify(defaultSkills));
       }
@@ -799,7 +808,7 @@ export default function StoryEditor() {
 
   const getActiveSkillsPrompt = () => {
     // Phóng đại miêu tả skill is ALWAYS active (permanent, cannot be disabled)
-    const permanentIds = ["skill_phong_dai", "skill_phan_boi", "skill_tuong_phan", "skill_vi_mo", "skill_viet_nhu_nguoi", "skill_vu_dao"];
+    const permanentIds = ["skill_phong_dai", "skill_phan_boi", "skill_tuong_phan", "skill_vi_mo", "skill_viet_nhu_nguoi", "skill_vu_dao", "skill_cuc_dam"];
     
     return writingSkills
       .filter(s => s.isActive || permanentIds.includes(s.id))
