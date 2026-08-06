@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ShieldAlert, Save, CheckCircle2, ArrowRight, ArrowLeft } from "lucide-react";
+import { ShieldAlert, Save, CheckCircle2, ArrowRight, ArrowLeft, Sparkles } from "lucide-react";
 import { SavedOptions } from "../components/SavedOptions";
+import { WritingSkillsManager, WritingSkill } from "../components/WritingSkillsManager";
 import { safeSetItem, safeGetItem } from "../utils/storage";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -13,6 +14,7 @@ export default function Page3() {
   const [plannedChapters, setPlannedChapters] = useState<string>("10");
   const [savedSection, setSavedSection] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [writingSkills, setWritingSkills] = useState<WritingSkill[]>([]);
   const { loading: authLoading } = useAuth();
 
   useEffect(() => {
@@ -30,6 +32,29 @@ export default function Page3() {
         } catch (e) {}
       }
       setIsLoaded(true);
+    });
+
+    // Load writing skills
+    safeGetItem("writingSkills").then(saved => {
+      if (saved) {
+        try { setWritingSkills(JSON.parse(saved)); } catch (e) {}
+      } else {
+        // Use same defaults as StoryEditor without the permanent ones (they get auto-added)
+        const defaultSkills: WritingSkill[] = [
+          {
+            id: "skill_show_dont_tell",
+            name: "Tả Cảnh Chân Thực (Show, Don't Tell)",
+            description: "Tránh các từ ngữ tường thuật trực tiếp.",
+            content: "NGUYÊN TẮC: TUYỆT ĐỐI KHÔNG dùng tính từ chỉ cảm xúc chung chung...",
+            isActive: true
+          },
+          { id: "skill_combat", name: "Chiến Đấu Kịch Tính", description: "Nhịp điệu câu văn nhanh, súc tích.", content: "NGUYÊN TẮC CHIẾN ĐẤU...", isActive: false },
+          { id: "skill_psychology", name: "Chiều Sâu Nội Tâm", description: "Mâu thuẫn nội tâm sâu sắc.", content: "NGUYÊN TẮC NỘI TÂM...", isActive: false },
+          { id: "skill_dialogue", name: "Hội Thoại Thâm Sâu", description: "Lời thoại ngắn gọn, thâm thuý.", content: "NGUYÊN TẮC HỘI THOẠI...", isActive: false },
+        ];
+        setWritingSkills(defaultSkills);
+        safeSetItem("writingSkills", JSON.stringify(defaultSkills));
+      }
     });
   }, [authLoading]);
 
@@ -188,6 +213,22 @@ export default function Page3() {
           </div>
         </div>
 
+      </div>
+
+      {/* Kỹ năng viết */}
+      <div className="mt-8 bg-white rounded-2xl border border-stone-200 p-5 sm:p-6 shadow-sm">
+        <div className="flex items-center gap-2 mb-4">
+          <Sparkles size={20} className="text-amber-500" />
+          <h2 className="text-lg font-bold text-stone-800">Kỹ năng viết</h2>
+          <span className="text-xs text-stone-400">(Kỹ năng có gắn sao ⭐ là vĩnh viễn, không thể tắt)</span>
+        </div>
+        <WritingSkillsManager 
+          skills={writingSkills}
+          onChange={(updated) => {
+            setWritingSkills(updated);
+            safeSetItem("writingSkills", JSON.stringify(updated));
+          }}
+        />
       </div>
 
       <div className="mt-8 flex justify-between">
