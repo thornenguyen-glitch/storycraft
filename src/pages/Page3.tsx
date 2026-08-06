@@ -36,25 +36,39 @@ export default function Page3() {
 
     // Load writing skills
     safeGetItem("writingSkills").then(saved => {
+      let skills: WritingSkill[] = [];
       if (saved) {
-        try { setWritingSkills(JSON.parse(saved)); } catch (e) {}
-      } else {
-        // Use same defaults as StoryEditor without the permanent ones (they get auto-added)
-        const defaultSkills: WritingSkill[] = [
-          {
-            id: "skill_show_dont_tell",
-            name: "Tả Cảnh Chân Thực (Show, Don't Tell)",
-            description: "Tránh các từ ngữ tường thuật trực tiếp.",
-            content: "NGUYÊN TẮC: TUYỆT ĐỐI KHÔNG dùng tính từ chỉ cảm xúc chung chung...",
-            isActive: true
-          },
-          { id: "skill_combat", name: "Chiến Đấu Kịch Tính", description: "Nhịp điệu câu văn nhanh, súc tích.", content: "NGUYÊN TẮC CHIẾN ĐẤU...", isActive: false },
-          { id: "skill_psychology", name: "Chiều Sâu Nội Tâm", description: "Mâu thuẫn nội tâm sâu sắc.", content: "NGUYÊN TẮC NỘI TÂM...", isActive: false },
-          { id: "skill_dialogue", name: "Hội Thoại Thâm Sâu", description: "Lời thoại ngắn gọn, thâm thuý.", content: "NGUYÊN TẮC HỘI THOẠI...", isActive: false },
-        ];
-        setWritingSkills(defaultSkills);
-        safeSetItem("writingSkills", JSON.stringify(defaultSkills));
+        try { skills = JSON.parse(saved); } catch (e) {}
       }
+      
+      // Ensure all permanent skills are present (add if missing from old saves)
+      const permanentDefs = [
+        { id: "skill_phong_dai", name: "Phóng đại miêu tả", description: "Khuếch đại đường cong, âm thanh, cảm giác và phản ứng trong cảnh nóng.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true },
+        { id: "skill_phan_boi", name: "Phản bội cơ thể tột độ", description: "Giằng xé giữa ý chí và thể xác — càng kìm nén càng bùng nổ.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true },
+        { id: "skill_tuong_phan", name: "Tương phản đoan trang - dâm dục", description: "Dành riêng cho mẫu mẹ đoan trang — càng sang trọng càng gợi dục.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true },
+        { id: "skill_vi_mo", name: "Vi mô phân giải", description: "Phân tách mọi hành động tình dục thành 5-8 micro-beat siêu chi tiết.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true },
+        { id: "skill_viet_nhu_nguoi", name: "Viết như người", description: "Loại bỏ toàn bộ dấu hiệu AI trong văn.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true },
+        { id: "skill_vu_dao", name: "Vũ đạo giao hợp", description: "Biên đạo từng động tác — giải phẫu một nhịp nắc, 12 kỹ thuật chống lặp.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true },
+      ];
+      for (const def of permanentDefs) {
+        if (!skills.find(s => s.id === def.id)) {
+          skills.push(def);
+        }
+      }
+
+      // Add default toggleable skills if list is empty (besides permanent ones)
+      if (skills.length === permanentDefs.length) {
+        skills.push(
+          { id: "skill_show_dont_tell", name: "Tả Cảnh Chân Thực (Show, Don't Tell)", description: "Tránh các từ ngữ tường thuật trực tiếp.", content: "NGUYÊN TẮC: TUYỆT ĐỐI KHÔNG dùng tính từ chỉ cảm xúc chung chung. Hãy thay bằng việc tả nhịp tim nhanh, khớp ngón tay siết chặt, mồ hôi lạnh, ánh mắt nhìn chằm chằm, hoặc giọng nói run rẩy.", isActive: true },
+          { id: "skill_combat", name: "Chiến Đấu Kịch Tính", description: "Nhịp điệu câu văn nhanh, súc tích.", content: "NGUYÊN TẮC CHIẾN ĐẤU: Nhịp văn dồn dập, sử dụng câu ngắn. Đặc tả chính xác hướng xuất chiêu.", isActive: false },
+          { id: "skill_psychology", name: "Chiều Sâu Nội Tâm", description: "Mâu thuẫn nội tâm sâu sắc.", content: "NGUYÊN TẮC NỘI TÂM: Tập trung sâu vào luồng suy nghĩ giằng xé.", isActive: false },
+          { id: "skill_dialogue", name: "Hội Thoại Thâm Sâu", description: "Lời thoại ngắn gọn, thâm thuý.", content: "NGUYÊN TẮC HỘI THOẠI: Lời đối thoại phải sắc bén, súc tích.", isActive: false },
+        );
+      }
+
+      skills = skills.sort((a, b) => a.name.localeCompare(b.name));
+      setWritingSkills(skills);
+      safeSetItem("writingSkills", JSON.stringify(skills));
     });
   }, [authLoading]);
 
