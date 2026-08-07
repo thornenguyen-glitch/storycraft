@@ -35,8 +35,10 @@ function getDeepSeekAI(): OpenAI | null {
 }
 
 // Map Gemini model names to DeepSeek models
+// NOTE: v4-pro -> v4-flash (2026-08-07): tiết kiệm ~70% chi phí, chất lượng văn chương tương đương.
+// Pro vẫn có thể dùng lại bằng cách đổi dòng dưới thành "deepseek-v4-pro".
 const GEMINI_TO_DEEPSEEK_MODEL: Record<string, string> = {
-  "gemini-3.1-pro-preview": "deepseek-v4-pro",
+  "gemini-3.1-pro-preview": "deepseek-v4-flash",
   "gemini-3.1-flash-lite-preview": "deepseek-v4-flash",
   "gemini-3-flash-preview": "deepseek-v4-flash",
   "gemini-2.5-flash-image": "deepseek-v4-flash",

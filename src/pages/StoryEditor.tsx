@@ -793,8 +793,9 @@ export default function StoryEditor() {
     
     if (currentIndex <= 0) return "";
     
-    // Get ALL previous chapters for maximum context (Gemini 3.1 Pro has 2M token limit)
-    const prevChapters = allChapters.slice(0, currentIndex);
+    // Chỉ gửi 3 chương gần nhất để tiết kiệm token (2026-08-07: trước đây gửi TOÀN BỘ chương cũ,
+    // khiến chi phí input tăng vọt theo số chương. Các chi tiết xa hơn nên ghi vào Bộ nhớ truyện).
+    const prevChapters = allChapters.slice(Math.max(0, currentIndex - 3), currentIndex);
     return prevChapters.map(c => `CHƯƠNG: ${c.title}\n\n${c.content}`).join("\n\n---\n\n");
   };
 
