@@ -35,14 +35,13 @@ function getDeepSeekAI(): OpenAI | null {
 }
 
 // Map Gemini model names to DeepSeek models
-// NOTE: v4-pro -> v4-flash (2026-08-07): tiết kiệm ~70% chi phí, chất lượng văn chương tương đương.
-// Pro vẫn có thể dùng lại bằng cách đổi dòng dưới thành "deepseek-v4-pro".
+// NOTE: v4-pro: chất lượng văn chương tốt nhất, chi phí cao hơn flash ~3x.
 const GEMINI_TO_DEEPSEEK_MODEL: Record<string, string> = {
-  "gemini-3.1-pro-preview": "deepseek-v4-flash",
-  "gemini-3.1-flash-lite-preview": "deepseek-v4-flash",
-  "gemini-3-flash-preview": "deepseek-v4-flash",
-  "gemini-2.5-flash-image": "deepseek-v4-flash",
-  "gemini-2.0-flash": "deepseek-v4-flash",
+  "gemini-3.1-pro-preview": "deepseek-v4-pro",
+  "gemini-3.1-flash-lite-preview": "deepseek-v4-pro",
+  "gemini-3-flash-preview": "deepseek-v4-pro",
+  "gemini-2.5-flash-image": "deepseek-v4-pro",
+  "gemini-2.0-flash": "deepseek-v4-pro",
 };
 
 // Check if request is for image generation (Gemini-only)
@@ -136,7 +135,7 @@ RULES:
     messages.push({ role: "user", content: userContent });
   }
   
-  const model = GEMINI_TO_DEEPSEEK_MODEL[params.model] || "deepseek-v4-flash";
+  const model = GEMINI_TO_DEEPSEEK_MODEL[params.model] || "deepseek-v4-pro";
   
   // DeepSeek v4-pro: thinking mode is ENABLED by default with "high" effort.
   // This generates hidden reasoning tokens that cost money but add no visible value

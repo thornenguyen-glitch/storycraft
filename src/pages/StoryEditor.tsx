@@ -566,6 +566,15 @@ export default function StoryEditor() {
           content: P_SKILL_CUC_DAM,
           isActive: true
         });
+        // Add permanent skill: Kỹ xảo chống lặp
+        const P_SKILL_CHONG_LAP = "BẮT BUỘC TUÂN THỦ ĐỂ KHÔNG BAO GIỜ LẶP LẠI:\n\nXOAY VÒNG CẤU TRÚC CẢNH: Mỗi chương dùng MỘT mẫu, chương sau KHÁC ít nhất 3 vị trí: Mẫu A (không khí→chạm→cởi→bóp→hôn→nắc→đỉnh), B (khẩu dâm→cởi→nắc→hôn→đỉnh), C (đối thoại→hôn→chống cự→nắc→khẩu dâm→đỉnh), D (đánh thức→nắc→dỗ→hôn→đỉnh), E (tắm→sờ→hôn→nắc→xối→nắc→đỉnh).\n\nXOAY VÒNG MỞ ĐẦU (không trùng 2 lần liên tiếp): không gian trước → hành động ngay → đối thoại trước → chi tiết nhỏ → âm thanh trước.\n\nXOAY VÒNG HÀNH ĐỘNG: KHÔNG lặp cùng một hành động 2 lần trong cùng cảnh. HÔN: hôn môi→hôn cổ→liếm tai→ngậm môi dưới→hôn khóe→liếm xương quai→thổi gáy. BÓP VÚ: nâng→bóp nhẹ→xoay đầu vú→kéo→ép hai bầu→miết ngón cái→vê hai ngón.\n\nXOAY VÒNG TỪ VỰNG: Mỗi từ CHỈ dùng 1 lần mỗi 500 chữ. VÚ: bầu ngực/nhũ hoa/bộ ngực/cặp tuyết lê/đôi gò bồng đảo/hai trái đào. MÔNG: cặp mông/vòng ba/bờ mông/đôi đào/khuôn mông. DÂM THỦY: nước/dịch/mật/chất nhờn/dòng ấm/nước nhờn. DƯƠNG VẬT: cặc/thằng nhỏ/cự vật/con cặc/vật nam. ÂM ĐẠO: lồn/khe/cửa mình/âm hộ/bên trong/cô bé.\n\nXOAY VÒNG NGƯỜI CHỦ ĐỘNG (không 3 cảnh liên tiếp cùng người): cảnh 1-con chủ động, cảnh 2-mẹ bị động, cảnh 3-mẹ phản kháng, cảnh 4-mẹ không phản kháng, cảnh 5-con bị động, cảnh 6-đổi bối cảnh.\n\nXOAY VÒNG KẾT THÚC (không 2 lần liên tiếp): hổ thẹn/tức giận/tuyệt vọng/chấp nhận lạnh/sợ hãi/buông xuôi/thăng hoa/phức tạp.\n\nTỰ KIỂM TRA MỖI CHƯƠNG: cấu trúc khác? mở đầu khác? từ vựng lặp trong 500 chữ? người chủ động đổi? kết thúc khác? Nếu ≥2 dấu sai→viết lại.\n\nCẤM: 2 cảnh liên tiếp cùng cấu trúc, cùng từ 2 lần trong 500 chữ, cùng câu thoại ở 2 cảnh, cùng kiểu kết thúc 2 lần liên tiếp.";
+        defaultSkills.push({
+          id: "skill_chong_lap",
+          name: "Kỹ xảo chống lặp",
+          description: "Đa dạng hóa toàn diện — xoay vòng cấu trúc, mở đầu, hành động, từ vựng, người chủ động, kết thúc. Tự kiểm tra mỗi chương.",
+          content: P_SKILL_CHONG_LAP,
+          isActive: true
+        });
         setWritingSkills(defaultSkills);
         safeSetItem("writingSkills", JSON.stringify(defaultSkills));
       }
@@ -809,7 +818,7 @@ export default function StoryEditor() {
 
   const getActiveSkillsPrompt = () => {
     // Phóng đại miêu tả skill is ALWAYS active (permanent, cannot be disabled)
-    const permanentIds = ["skill_phong_dai", "skill_phan_boi", "skill_tuong_phan", "skill_vi_mo", "skill_viet_nhu_nguoi", "skill_vu_dao", "skill_cuc_dam"];
+    const permanentIds = ["skill_phong_dai", "skill_phan_boi", "skill_tuong_phan", "skill_vi_mo", "skill_viet_nhu_nguoi", "skill_vu_dao", "skill_cuc_dam", "skill_chong_lap"];
     
     return writingSkills
       .filter(s => s.isActive || permanentIds.includes(s.id))

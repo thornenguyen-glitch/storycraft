@@ -50,6 +50,7 @@ export default function Page3() {
         { id: "skill_viet_nhu_nguoi", name: "Viết như người", description: "Loại bỏ toàn bộ dấu hiệu AI trong văn.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true },
         { id: "skill_vu_dao", name: "Vũ đạo giao hợp", description: "Biên đạo từng động tác — giải phẫu một nhịp nắc, 12 kỹ thuật chống lặp.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true },
         { id: "skill_cuc_dam", name: "Cảnh nóng cực dâm", description: "Tạo sự dâm dục tột độ — 2 chế độ cưỡng ép/đồng thuận, 5 giai đoạn cực khoái.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true },
+        { id: "skill_chong_lap", name: "Kỹ xảo chống lặp", description: "Đa dạng hóa toàn diện — xoay vòng cấu trúc, hành động, từ vựng, kết thúc.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true },
       ];
       for (const def of permanentDefs) {
         if (!skills.find(s => s.id === def.id)) {
