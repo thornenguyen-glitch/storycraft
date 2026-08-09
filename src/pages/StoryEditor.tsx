@@ -575,6 +575,15 @@ export default function StoryEditor() {
           content: P_SKILL_CHONG_LAP,
           isActive: true
         });
+        // Add toggleable skill: Logic truyện
+        const P_SKILL_LOGIC = "BẮT BUỘC TUÂN THỦ ĐỂ TÌNH TIẾT LUÔN HỢP LÝ VÀ CHÂN THỰC:\n\nNHÂN VẬT HÀNH ĐỘNG THEO TÍNH CÁCH: Mỗi nhân vật chỉ được làm điều PHÙ HỢP với tính cách đã thiết lập. Mẹ đoan trang KHÔNG tự nhiên chủ động hôn — phải có LÝ DO (say, sốc, bị ép, yếu lòng sau biến cố). Con nhút nhát KHÔNG tự nhiên táo bạo — phải có QUÁ TRÌNH (lần đầu run, lần hai thăm dò, lần ba liều). Trước mỗi hành động lớn, trả lời: TẠI SAO ngay lúc này?\n\nNHÂN QUẢ: Mọi sự kiện có nguyên nhân (setup trước) và hậu quả (không biến mất sau 1 chương). Bí mật lộ → lòng tin sụp đổ, không làm lành ngay. Đánh nhau → bị thương, mệt, không hồi phục ngay. Cãi vã → căng thẳng kéo dài.\n\nTHỜI GIAN TRÔI THẬT: Cần thời gian hồi phục, vượt qua cú sốc, thay đổi suy nghĩ, đi lại. Đánh dấu: \"Sáng hôm sau...\", \"Ba ngày sau...\". Nhân vật cần ngủ, ăn, nghỉ. Không 3 biến cố lớn trong 1 ngày.\n\nTHÔNG TIN HỢP LÝ: Nhân vật chỉ biết điều họ CÓ THỂ biết. Không tự nhiên biết bí mật người khác. Tin tức lan truyền từng người. Điện thoại hết pin, mất sóng, không ai bắt máy — như đời thật.\n\nCẢM XÚC CHÂN THỰC: Cảm xúc không phải công tắc. Giận → nguôi dần. Yêu → phát triển từ từ (để ý → rung động → nhớ nhung → yêu). Cảm xúc mâu thuẫn mới là thật: vừa ghét vừa thương, cười trong nước mắt.\n\nCHI TIẾT ĐỜI THƯỜNG: Xen kẽ chi tiết nhỏ: pha trà, nấu ăn, thời tiết, tiếng ồn, mùi, cơ thể (đói, mệt, đau lưng). Những chi tiết này KHÔNG cần phục vụ cốt truyện — chúng tạo cảm giác THẬT.\n\nTRÁNH SÁO RỖNG: Cấm \"đúng lúc đó\" trùng hợp quá mức (tối đa 1 lần/truyện). Nhân vật phải VẤT VẢ mới đạt được. Thất bại là bình thường. Mọi thứ đều có GIÁ. Giải pháp đến từ trí thông minh, không từ may mắn.\n\nĐỐI THOẠI TỰ NHIÊN: Câu ngắn, cộc, ngắt lời, im lặng, không giải thích dài dòng lúc xúc động. Theo mối quan hệ: mẹ-con (ngắn, ra lệnh/ấp úng), vợ-chồng cũ (lạnh nhạt), người yêu (ngượng ngùng).\n\nTỰ KIỂM TRA MỖI CHƯƠNG: Hành động có lý do? Hậu quả không bị bỏ qua? Thời gian thực? Nhân vật biết hợp lý? Cảm xúc đổi quá nhanh? Có chi tiết đời thường? Trùng hợp vô lý? Đối thoại thật? Nếu ≥3 SAI → sửa lại.";
+        defaultSkills.push({
+          id: "skill_logic",
+          name: "Logic truyện — Tình tiết hợp lý & Chân thực",
+          description: "Nhân vật hành động có lý do, nhân quả rõ ràng, thời gian thực tế, thông tin hợp lý, cảm xúc chân thực, chi tiết đời thường — tránh sáo rỗng và tiện lợi. CÓ THỂ BẬT TẮT.",
+          content: P_SKILL_LOGIC,
+          isActive: true
+        });
         setWritingSkills(defaultSkills);
         safeSetItem("writingSkills", JSON.stringify(defaultSkills));
       }
