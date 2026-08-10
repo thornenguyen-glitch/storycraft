@@ -584,6 +584,15 @@ export default function StoryEditor() {
           content: P_SKILL_LOGIC,
           isActive: true
         });
+        // Add toggleable skill: Lén lút — Hồi hộp & Kích thích cấm kỵ
+        const P_SKILL_LEN_LUT = "BẮT BUỘC TUÂN THỦ KHI VIẾT CẢNH LÉN LÚT (MÊ GIAN, SỜ LÉN, LỢI DỤNG LÚC NGỦ):\n\nKHÔNG KHÍ SỢ HÃI (60% sợ - 40% kích thích): Tim đập thình thịch át cả tiếng thở. Mồ hôi túa lòng bàn tay. ...[truncated]
+        defaultSkills.push({
+          id: "skill_len_lut",
+          name: "Lén lút — Hồi hộp & Kích thích cấm kỵ",
+          description: "Cảnh lén lút (mê gian, sờ lén, lợi dụng lúc ngủ) — hồi hộp sợ hãi + kích thích cấm kỵ, tiến triển chậm từng milimet. CÓ THỂ BẬT TẮT.",
+          content: P_SKILL_LEN_LUT,
+          isActive: true
+        });
         setWritingSkills(defaultSkills);
         safeSetItem("writingSkills", JSON.stringify(defaultSkills));
       }
