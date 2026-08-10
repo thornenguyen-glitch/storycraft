@@ -59,13 +59,18 @@ export default function Page3() {
       }
 
       // Add default toggleable skills if list is empty (besides permanent ones)
-      if (skills.length === permanentDefs.length) {
-        skills.push(
-          { id: "skill_show_dont_tell", name: "Tả Cảnh Chân Thực (Show, Don't Tell)", description: "Tránh các từ ngữ tường thuật trực tiếp.", content: "NGUYÊN TẮC: TUYỆT ĐỐI KHÔNG dùng tính từ chỉ cảm xúc chung chung. Hãy thay bằng việc tả nhịp tim nhanh, khớp ngón tay siết chặt, mồ hôi lạnh, ánh mắt nhìn chằm chằm, hoặc giọng nói run rẩy.", isActive: true },
-          { id: "skill_combat", name: "Chiến Đấu Kịch Tính", description: "Nhịp điệu câu văn nhanh, súc tích.", content: "NGUYÊN TẮC CHIẾN ĐẤU: Nhịp văn dồn dập, sử dụng câu ngắn. Đặc tả chính xác hướng xuất chiêu.", isActive: false },
-          { id: "skill_psychology", name: "Chiều Sâu Nội Tâm", description: "Mâu thuẫn nội tâm sâu sắc.", content: "NGUYÊN TẮC NỘI TÂM: Tập trung sâu vào luồng suy nghĩ giằng xé.", isActive: false },
-          { id: "skill_dialogue", name: "Hội Thoại Thâm Sâu", description: "Lời thoại ngắn gọn, thâm thuý.", content: "NGUYÊN TẮC HỘI THOẠI: Lời đối thoại phải sắc bén, súc tích.", isActive: false },
-        );
+      const toggleableDefs = [
+        { id: "skill_show_dont_tell", name: "Tả Cảnh Chân Thực (Show, Don't Tell)", description: "Tránh các từ ngữ tường thuật trực tiếp.", content: "NGUYÊN TẮC: TUYỆT ĐỐI KHÔNG dùng tính từ chỉ cảm xúc chung chung.", isActive: true },
+        { id: "skill_combat", name: "Chiến Đấu Kịch Tính", description: "Nhịp điệu câu văn nhanh, súc tích.", content: "NGUYÊN TẮC CHIẾN ĐẤU: Nhịp văn dồn dập, sử dụng câu ngắn.", isActive: false },
+        { id: "skill_psychology", name: "Chiều Sâu Nội Tâm", description: "Mâu thuẫn nội tâm sâu sắc.", content: "NGUYÊN TẮC NỘI TÂM: Tập trung sâu vào luồng suy nghĩ giằng xé.", isActive: false },
+        { id: "skill_dialogue", name: "Hội Thoại Thâm Sâu", description: "Lời thoại ngắn gọn, thâm thuý.", content: "NGUYÊN TẮC HỘI THOẠI: Lời đối thoại phải sắc bén, súc tích.", isActive: false },
+        { id: "skill_logic", name: "Logic truyện — Tình tiết hợp lý & Chân thực", description: "Nhân vật hành động có lý do, nhân quả rõ ràng, thời gian thực tế.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true },
+        { id: "skill_len_lut", name: "Lén lút — Hồi hộp & Kích thích cấm kỵ", description: "Cảnh lén lút (mê gian, sờ lén, lợi dụng lúc ngủ) — hồi hộp sợ hãi + kích thích cấm kỵ.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true },
+      ];
+      for (const def of toggleableDefs) {
+        if (!skills.find(s => s.id === def.id)) {
+          skills.push(def);
+        }
       }
 
       skills = skills.sort((a, b) => a.name.localeCompare(b.name));

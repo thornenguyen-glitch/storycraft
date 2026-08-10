@@ -466,6 +466,14 @@ export default function StoryEditor() {
           if (hasPlaceholder) {
             forceReload = true;
           } else {
+            // Auto-add any new toggleable skills not yet in saved list
+            const knownIds = new Set(skills.map((s: WritingSkill) => s.id));
+            if (!knownIds.has("skill_logic")) {
+              skills.push({ id: "skill_logic", name: "Logic truyện — Tình tiết hợp lý & Chân thực", description: "Nhân vật hành động có lý do, nhân quả rõ ràng, thời gian thực tế, thông tin hợp lý, cảm xúc chân thực, chi tiết đời thường.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true });
+            }
+            if (!knownIds.has("skill_len_lut")) {
+              skills.push({ id: "skill_len_lut", name: "Lén lút — Hồi hộp & Kích thích cấm kỵ", description: "Cảnh lén lút (mê gian, sờ lén, lợi dụng lúc ngủ) — hồi hộp sợ hãi + kích thích cấm kỵ.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true });
+            }
             setWritingSkills(skills);
           }
         } catch (e) {
