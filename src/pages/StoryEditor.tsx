@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import localforage from "localforage";
 import { Link } from "react-router-dom";
-import { continueStory, rewriteStory, fixStoryErrors, scanStoryErrors, suggestCharacterNames, suggestAppearance, generatePlotMap, scanFullStoryConsistency, analyzeWritingStyle } from "../services/ai";
+import { continueStory, rewriteStory, fixStoryErrors, scanStoryErrors, suggestCharacterNames, suggestAppearance, generatePlotMap, scanFullStoryConsistency, analyzeWritingStyle, safeGenerateContent } from "../services/ai";
 import { Loader2, PenTool, Sparkles, Wand2, Copy, CheckCircle2, Trash2, Download, ArrowLeft, ArrowRight, Image as ImageIcon, Plus, ChevronDown, ChevronRight, Book, FileText, RefreshCw, Menu, PanelLeftClose, PanelLeftOpen, Settings, Save, Brain, X, RotateCcw, Shield, User, Globe, Share2, Facebook, Twitter, MessageCircle, Maximize2, Minimize2, Lightbulb, Users, Database, Upload, Flame, Map, Search, LogIn, LogOut, FileQuestion, Type } from "lucide-react";
 import { safeSetItem, safeGetItem, getStorageUsage } from "../utils/storage";
 import { useAuth } from "../contexts/AuthContext";
@@ -1542,8 +1542,8 @@ export default function StoryEditor() {
     try {
       const content = chapter.content.substring(0, 8000); // Limit to avoid token overflow
       const prompt = `Hãy tóm tắt nội dung chương truyện sau đây trong 2-3 câu ngắn gọn (tiếng Việt), chỉ tóm tắt các sự kiện chính:\n\n${content}\n\nTóm tắt (2-3 câu):`;
-      const res = await safeGenerateContent({ contents: prompt, config: { temperature: 0.3, maxOutputTokens: 512 } });
-      const summary = res?.text || res || "";
+      const res = await safeGenerateContent({ model: "gemini-3.1-flash-lite-preview", contents: prompt });
+      const summary = res.text || "";
       if (summary) {
         setVolumes(prev => prev.map(v => {
           if (v.id === activeVolumeId) {

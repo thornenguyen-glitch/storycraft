@@ -166,7 +166,7 @@ function isQuotaError(error: any): boolean {
 }
 
 // Unified safe generate content with dual-provider fallback
-async function safeGenerateContent(params: any, retryCount = 0): Promise<any> {
+export async function safeGenerateContent(params: any, retryCount = 0): Promise<any> {
   const hasGemini = !!getGeminiAI();
   const hasDeepSeek = !!getDeepSeekAI();
   const isImage = isImageRequest(params);
