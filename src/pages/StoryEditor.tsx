@@ -1540,8 +1540,8 @@ export default function StoryEditor() {
     if (!chapter || !chapter.content.trim() || summarizing) return;
     setSummarizing(true);
     try {
-      const content = chapter.content.substring(0, 16000); // Increased limit for better coverage
-      const prompt = `Đọc kỹ TOÀN BỘ nội dung chương truyện dưới đây. Viết một đoạn tóm tắt chi tiết (150-300 chữ), bao quát TẤT CẢ các sự kiện và diễn biến quan trọng trong chương. YÊU CẦU BẮT BUỘC:\n- Liệt kê đầy đủ mọi sự kiện chính theo trình tự thời gian\n- Giữ nguyên tên nhân vật, địa điểm, chi tiết quan trọng\n- Không bỏ sót bất kỳ diễn biến nào dù nhỏ\n- Viết bằng tiếng Việt, văn xuôi tự nhiên, liền mạch\n- Không bình luận, không đánh giá, không thêm ý kiến cá nhân\n\nNội dung chương:\n${content}\n\nTóm tắt chương:`;
+      const content = chapter.content.substring(0, 16000);
+      const prompt = `Tóm tắt chương truyện sau trong KHOẢNG 300 CHỮ. Yêu cầu:\n- Chỉ 300 chữ, không dài hơn\n- Phải bao quát ĐỦ các sự kiện chính trong chương\n- Giữ tên nhân vật, địa điểm\n- Viết bằng tiếng Việt, văn xuôi liền mạch\n\nNội dung:\n${content}\n\nTóm tắt (khoảng 300 chữ):`;
       const res = await safeGenerateContent({ model: "gemini-3.1-flash-lite-preview", contents: prompt });
       const summary = res.text || "";
       if (summary) {
