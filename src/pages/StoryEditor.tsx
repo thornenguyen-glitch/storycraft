@@ -34,7 +34,7 @@ export default function StoryEditor() {
       id: "v1",
       title: "Quyển 1",
       chapters: [
-        { id: "c1", title: "Chương 1", content: "" }
+        { id: "c1", title: "Chương 1", content: "", summary: "" }
       ]
     }
   ]);
@@ -1353,7 +1353,7 @@ export default function StoryEditor() {
       title: "Xóa toàn bộ truyện",
       message: "Bạn có chắc chắn muốn XÓA TOÀN BỘ truyện (tất cả quyển và chương)? Hành động này không thể hoàn tác.",
       onConfirm: () => {
-        const initialVolumes = [{ id: "v1", title: "Quyển 1", chapters: [{ id: "c1", title: "Chương 1", content: "" }] }];
+        const initialVolumes = [{ id: "v1", title: "Quyển 1", chapters: [{ id: "c1", title: "Chương 1", content: "", summary: "" }] }];
         setVolumes(initialVolumes);
         setActiveVolumeId("v1");
         setActiveChapterId("c1");
@@ -1526,12 +1526,40 @@ export default function StoryEditor() {
       {
         id: newVolumeId,
         title: `Quyển ${prev.length + 1}`,
-        chapters: [{ id: newChapterId, title: "Chương 1", content: "" }]
+        chapters: [{ id: newChapterId, title: "Chương 1", content: "", summary: "" }]
       }
     ]);
     setExpandedVolumes(prev => [...prev, newVolumeId]);
     setActiveVolumeId(newVolumeId);
     setActiveChapterId(newChapterId);
+  };
+
+  const [summarizing, setSummarizing] = useState(false);
+  const generateSummary = async () => {
+    const chapter = getActiveChapter();
+    if (!chapter || !chapter.content.trim() || summarizing) return;
+    setSummarizing(true);
+    try {
+      const content = chapter.content.substring(0, 8000); // Limit to avoid token overflow
+      const prompt = `Hãy tóm tắt nội dung chương truyện sau đây trong 2-3 câu ngắn gọn (tiếng Việt), chỉ tóm tắt các sự kiện chính:\n\n${content}\n\nTóm tắt (2-3 câu):`;
+      const res = await safeGenerateContent({ contents: prompt, config: { temperature: 0.3, maxOutputTokens: 512 } });
+      const summary = res?.text || res || "";
+      if (summary) {
+        setVolumes(prev => prev.map(v => {
+          if (v.id === activeVolumeId) {
+            return {
+              ...v,
+              chapters: v.chapters.map(c => c.id === activeChapterId ? { ...c, summary } : c)
+            };
+          }
+          return v;
+        }));
+      }
+    } catch (e: any) {
+      console.error("Failed to summarize:", e);
+    } finally {
+      setSummarizing(false);
+    }
   };
 
   const addChapter = (volumeId: string) => {
@@ -1540,7 +1568,7 @@ export default function StoryEditor() {
       if (v.id === volumeId) {
         return {
           ...v,
-          chapters: [...v.chapters, { id: newChapterId, title: `Chương ${v.chapters.length + 1}`, content: "" }]
+          chapters: [...v.chapters, { id: newChapterId, title: `Chương ${v.chapters.length + 1}`, content: "", summary: "" }]
         };
       }
       return v;
@@ -3185,6 +3213,33 @@ export default function StoryEditor() {
               }`}
               placeholder="Tên chương..."
             />
+            {/* Chapter Summary */}
+            <div className="mb-4 sm:mb-6">
+              {activeChapter.summary ? (
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 sm:p-4">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-bold text-amber-700 uppercase tracking-wide">Tóm tắt chương</span>
+                    <button
+                      onClick={generateSummary}
+                      disabled={summarizing}
+                      className="text-xs text-amber-600 hover:text-amber-800 font-medium disabled:opacity-50"
+                    >
+                      {summarizing ? "Đang tóm tắt..." : "Làm mới"}
+                    </button>
+                  </div>
+                  <p className="text-sm text-amber-900 leading-relaxed">{activeChapter.summary}</p>
+                </div>
+              ) : (
+                <button
+                  onClick={generateSummary}
+                  disabled={summarizing || !activeChapter.content.trim()}
+                  className="flex items-center gap-1.5 text-xs font-medium text-amber-600 hover:text-amber-800 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <Sparkles size={14} />
+                  {summarizing ? "Đang tóm tắt..." : "Tóm tắt chương bằng AI"}
+                </button>
+              )}
+            </div>
             <textarea
               ref={textareaRef}
               value={localContent}
