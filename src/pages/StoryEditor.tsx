@@ -1540,8 +1540,7 @@ export default function StoryEditor() {
     if (!chapter || !chapter.content.trim() || summarizing) return;
     setSummarizing(true);
     try {
-      const content = chapter.content.substring(0, 16000);
-      const prompt = `Tóm tắt chương truyện sau trong KHOẢNG 300 CHỮ. Yêu cầu:\n- Chỉ 300 chữ, không dài hơn\n- Phải bao quát ĐỦ các sự kiện chính trong chương\n- Giữ tên nhân vật, địa điểm\n- Viết bằng tiếng Việt, văn xuôi liền mạch\n\nNội dung:\n${content}\n\nTóm tắt (khoảng 300 chữ):`;
+      const prompt = `Tóm tắt chương truyện sau trong KHOẢNG 200-300 CHỮ, ngắn gọn nhưng ĐỦ Ý. Yêu cầu:\n- Chỉ nêu sự kiện chính, không tả chi tiết\n- Giữ tên nhân vật\n- Viết liền mạch, không gạch đầu dòng\n\nNội dung:\n${chapter.content}\n\nTóm tắt:`;
       const res = await safeGenerateContent({ model: "gemini-3.1-flash-lite-preview", contents: prompt });
       const summary = res.text || "";
       if (summary) {
