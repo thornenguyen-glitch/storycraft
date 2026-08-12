@@ -1541,7 +1541,7 @@ export default function StoryEditor() {
     setSummarizing(true);
     try {
       const content = chapter.content.substring(0, 8000); // Limit to avoid token overflow
-      const prompt = `Hãy tóm tắt nội dung chương truyện sau đây trong 2-3 câu ngắn gọn (tiếng Việt), chỉ tóm tắt các sự kiện chính:\n\n${content}\n\nTóm tắt (2-3 câu):`;
+      const prompt = `Hãy đọc kỹ nội dung chương truyện sau và viết một đoạn tóm tắt NGẮN (khoảng 100-200 chữ). Yêu cầu:\n- Tóm đủ các sự kiện CHÍNH trong chương (không bỏ sót ý quan trọng)\n- Giữ nguyên tên nhân vật, địa điểm\n- Viết bằng tiếng Việt, văn phong tự nhiên\n- Không bình luận, không đánh giá\n\nNội dung chương:\n${content}\n\nTóm tắt chương (100-200 chữ):`;
       const res = await safeGenerateContent({ model: "gemini-3.1-flash-lite-preview", contents: prompt });
       const summary = res.text || "";
       if (summary) {
