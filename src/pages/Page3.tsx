@@ -66,6 +66,7 @@ export default function Page3() {
         { id: "skill_dialogue", name: "Hội Thoại Thâm Sâu", description: "Lời thoại ngắn gọn, thâm thuý.", content: "NGUYÊN TẮC HỘI THOẠI: Lời đối thoại phải sắc bén, súc tích.", isActive: false },
         { id: "skill_logic", name: "Logic truyện — Tình tiết hợp lý & Chân thực", description: "Nhân vật hành động có lý do, nhân quả rõ ràng, thời gian thực tế.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true },
         { id: "skill_len_lut", name: "Lén lút — Hồi hộp & Kích thích cấm kỵ", description: "Cảnh lén lút (mê gian, sờ lén, lợi dụng lúc ngủ) — hồi hộp sợ hãi + kích thích cấm kỵ.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true },
+        { id: "skill_vo_hiep", name: "Võ hiệp Kim Dung", description: "Viết truyện võ hiệp phong cách Kim Dung — võ công, nội công, cảnh đánh võ, xưng hô giang hồ.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true },
       ];
       for (const def of toggleableDefs) {
         if (!skills.find(s => s.id === def.id)) {

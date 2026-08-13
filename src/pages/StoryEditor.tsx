@@ -474,6 +474,9 @@ export default function StoryEditor() {
             if (!knownIds.has("skill_len_lut")) {
               skills.push({ id: "skill_len_lut", name: "Lén lút — Hồi hộp & Kích thích cấm kỵ", description: "Cảnh lén lút (mê gian, sờ lén, lợi dụng lúc ngủ) — hồi hộp sợ hãi + kích thích cấm kỵ.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true });
             }
+            if (!knownIds.has("skill_vo_hiep")) {
+              skills.push({ id: "skill_vo_hiep", name: "Võ hiệp Kim Dung", description: "Viết truyện võ hiệp phong cách Kim Dung — võ công, nội công, cảnh đánh võ, xưng hô giang hồ.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true });
+            }
             setWritingSkills(skills);
           }
         } catch (e) {
@@ -599,6 +602,15 @@ export default function StoryEditor() {
           name: "Lén lút — Hồi hộp & Kích thích cấm kỵ",
           description: "Cảnh lén lút (mê gian, sờ lén, lợi dụng lúc ngủ) — hồi hộp sợ hãi + kích thích cấm kỵ, tiến triển chậm từng milimet. CÓ THỂ BẬT TẮT.",
           content: P_SKILL_LEN_LUT,
+          isActive: true
+        });
+        // Add toggleable skill: Võ hiệp Kim Dung
+        const P_SKILL_VO_HIEP = "BẮT BUỘC TUÂN THỦ KHI VIẾT TRUYỆN VÕ HIỆP PHONG CÁCH KIM DUNG:\n\nHỆ THỐNG VÕ HỌC: Tên võ công gợi hình ảnh: kiếm pháp (Tích Huyết Kiếm Pháp, Độc Cô Cửu Kiếm), chưởng pháp (Giáng Long Thập Bát Chưởng, Huyền Minh Thần Chưởng), chỉ pháp (Nhất Dương Chỉ), khinh công (Lăng Ba Vi Bộ), nội công (Dịch Cân Kinh, Cửu Dương Thần Công), ám khí (Tú Hoa Châm).\nPHÂN CẤP: Nhập môn → Thành thạo → Đăng phong tạo cực → Tiền vô cổ nhân. Võ công thượng thừa đi kèm khẩu quyết (bí kíp truyền miệng).\nNỘI CÔNG: Chân khí lưu chuyển theo kinh mạch (Nhâm, Đốc, 12 chính kinh). Vận công: tụ khí đan điền → dẫn khí ra tứ chi → bộc phát. Tẩu hỏa nhập ma: luyện sai → kinh mạch đảo lộn → điên loạn hoặc tàn phế.\n\nCẢNH ĐÁNH VÕ (200-500 chữ mỗi hiệp):\n1. Đối thủ đánh giá nhau (khí thế, tư thế, nội lực tỏa ra)\n2. Thăm dò: chiêu nhẹ, thử chiêu\n3. Giao chiến: chiêu thức qua lại, mỗi bên 2-3 chiêu\n4. Biến hóa: đối phương đổi chiêu → phản đòn → hụt → trúng\n5. Kết quả: thắng bại, thương tích, nội lực tổn hao\nMÔ TẢ ĐỘNG TÁC: Kiếm: 'kiếm quang lóe lên, mũi kiếm rung nhẹ', 'kiếm khí như mưa sa'. Chưởng: 'chưởng phong ù ù', 'kình lực như sóng thần'. Khinh công: 'thân hình nhẹ như chim én', 'mũi chân điểm nhẹ, lướt đi vài trượng'.\nÂM THANH: Kiếm chạm kiếm 'keng', chưởng phong 'ù ù', đánh trúng 'bịch bốp', gãy xương 'rắc'.\nVẾT THƯƠNG: Trúng kiếm → đường máu bắn ra, vạt áo rách. Trúng chưởng → thổ huyết, nội tạng như vỡ. Trúng độc → mặt tái, môi thâm tím.\n\nXƯNG HÔ GIANG HỒ:\nNam: gọi người lớn 'tiền bối', 'bá bá', 'lão trượng'. Đồng bối 'huynh đài', 'các hạ'. Tự xưng khiêm: 'tại hạ', 'vãn bối'. Tự xưng kiêu: 'bản tọa', 'lão phu'.\nNữ: tự xưng 'tiểu nữ', 'thiếp thân'. Gọi 'công tử', 'thiếu hiệp', 'cô nương', 'phu nhân'.\nNgôn ngữ giang hồ: 'Hạnh ngộ' (chào), 'Đa tạ đại ân' (cảm ơn), 'Lĩnh giáo cao chiêu' (thách đấu), 'Hậu hội hữu kỳ' (tạm biệt).\nTôn ti: chưởng môn > trưởng lão > đệ tử. Sư phụ > sư huynh/sư tỷ > sư đệ/sư muội.\n\nBỐI CẢNH GIANG HỒ: Tửu lâu quán trà (hội ngộ, nghe ngóng), khách điếm (biến cố), sơn trang môn phái (bí mật), chùa chiền (cao tăng tuyệt học), hoang dã (kỳ ngộ cao nhân).\nĐỒ VẬT: vũ khí (kiếm, đao, thương, côn, phi tiêu), bí tịch (sách võ công cổ), đan dược (giải độc, tăng công lực), tín vật (ngọc bội, kim bài).\nGIANG HỒ QUY CỦ: Ân oán phân minh. Nhất ngôn ký xuất tứ mã nan truy. Danh dự trên hết. Cấm kỵ: khi sư diệt tổ, phản bội sư môn, hạ độc ám toán.\n\nTÂM LÝ NHÂN VẬT: Đại hiệp (nghĩa khí, gặp bất bình ra tay). Cao thủ ẩn cư (tránh hồng trần, chỉ xuất thủ khi giang hồ nguy biến). Nữ hiệp (kiên cường, dám yêu dám hận). Phản diện (có nỗi đau quá khứ, võ công độc địa).\n\nVĂN PHONG: Câu dồn dập khi đánh ('Kiếm ra như điện. Máu văng. Tiếng keng.'). Câu chậm khi tả nội công. Dùng thành ngữ điển cố Trung Hoa. Đối thoại ngắn gọn hàm súc.\nTừ ngữ: nội lực, chân khí, khinh công, kiếm chiêu, chưởng phong, kinh mạch, huyệt đạo, đan điền, bí tịch, võ lâm, bạch đạo, hắc đạo.\n\nĐỊNH LƯỢNG: Trận đấu lớn 1000-2000 chữ. Trận nhỏ 300-500. Luyện công 500-1000. Đàm luận võ học 300-800. Khám phá bí tịch 500-1000.\nCẤM: Võ công mơ hồ ('đánh rất nhanh' — phải tả chiêu nào trúng chỗ nào). Thắng quá dễ. Đối thoại hiện đại. Quên xưng hô tôn ti.";
+        defaultSkills.push({
+          id: "skill_vo_hiep",
+          name: "Võ hiệp Kim Dung",
+          description: "Viết truyện võ hiệp phong cách Kim Dung — võ công, nội công, cảnh đánh võ, xưng hô giang hồ, tôn ti trật tự. CÓ THỂ BẬT TẮT.",
+          content: P_SKILL_VO_HIEP,
           isActive: true
         });
         setWritingSkills(defaultSkills);
