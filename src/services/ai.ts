@@ -781,7 +781,7 @@ Tác giả yêu cầu bạn thực hiện chỉ thị sau đây cho đoạn văn
 ---
 
 YÊU CẦU ĐẦU RA:
-- Viết CỰC KỲ CHI TIẾT, miêu tả tỉ mỉ hành động, môi trường và tâm lý (KHÔNG GIỚI HẠN DUNG LƯỢNG, viết càng dài càng tốt).
+- Viết CỰC KỲ CHI TIẾT, miêu tả tỉ mỉ hành động, môi trường và tâm lý.
 - CHƯƠNG PHẢI CÓ ÍT NHẤT 20.000 KÝ TỰ (20.000 chữ số/tiếng Việt trở lên). Đây là YÊU CẦU BẮT BUỘC — phải viết đủ độ dài, không được cắt ngắn, không được kết thúc vội. Nếu chưa đạt 20.000 ký tự, hãy tiếp tục viết: phát triển thêm chi tiết tâm lý, mở rộng đối thoại, miêu tả thêm cảnh vật và diễn biến.
 - Phân bổ độ dài: càng nhiều chi tiết càng tốt — mỗi hành động, mỗi cảm xúc, mỗi đoạn hội thoại đều phải được khai thác sâu.
 - TUYỆT ĐỐI TUÂN THỦ chỉ thị ở mục "NHIỆM VỤ TỐI THƯỢNG" phía trên.
@@ -1150,7 +1150,7 @@ Tác giả yêu cầu bạn thực hiện chỉ thị sau đây khi viết lại
 ---
 
 YÊU CẦU ĐẦU RA:
-- Viết lại CỰC KỲ CHI TIẾT (KHÔNG GIỚI HẠN DUNG LƯỢNG, viết càng dài càng tốt).
+- Viết lại CỰC KỲ CHI TIẾT.
 - CHƯƠNG PHẢI CÓ ÍT NHẤT 20.000 KÝ TỰ (20.000 chữ số/tiếng Việt trở lên). Đây là YÊU CẦU BẮT BUỘC — phải viết đủ độ dài, không được cắt ngắn, không được kết thúc vội. Nếu chưa đạt 20.000 ký tự, hãy tiếp tục viết: phát triển thêm chi tiết tâm lý, mở rộng đối thoại, miêu tả thêm cảnh vật và diễn biến.
 - Phân bổ độ dài: càng nhiều chi tiết càng tốt — mỗi hành động, mỗi cảm xúc, mỗi đoạn hội thoại đều phải được khai thác sâu.
 - TUYỆT ĐỐI TUÂN THỦ chỉ thị ở mục "NHIỆM VỤ TỐI THƯỢNG" phía trên.
