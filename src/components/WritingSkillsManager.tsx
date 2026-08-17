@@ -21,6 +21,7 @@ export interface WritingSkill {
   content: string;
   isActive: boolean;
   isCustom?: boolean;
+  version?: number;
 }
 
 interface WritingSkillsManagerProps {
