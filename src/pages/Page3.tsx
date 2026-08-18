@@ -43,9 +43,10 @@ export default function Page3() {
       
       // Đảm bảo 3 skill mặc định luôn có mặt
       const defaultDefs = [
-        { id: "skill_anti_ai", name: "Chống lặp AI", description: "Chống văn máy móc, lặp câu, lặp từ, lặp cấu trúc — đa dạng câu, từ vựng, nhịp điệu, cảm giác như người thật.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true, version: 4 },
-        { id: "skill_dense_taboo", name: "Cảnh nóng cấm kỵ dày đặc", description: "Viết cảnh nóng dài, chi tiết tột độ, đa giác quan, arc kháng cự → buông xuôi, taboo gia đình, đa cao trào.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true, version: 4 },
-        { id: "skill_incest_storycraft", name: "Cấu trúc truyện cấm kỵ", description: "Cấu trúc truyện loạn luân hoàn chỉnh — tiến triển tâm lý, giữ không khí cấm kỵ, nhịp truyện, công cụ tâm lý.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true, version: 4 },
+        { id: "skill_anti_ai", name: "Chống lặp AI", description: "Chống văn máy móc, lặp câu, lặp từ, lặp cấu trúc — đa dạng câu, từ vựng, nhịp điệu, cảm giác như người thật.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true, version: 5 },
+        { id: "skill_dense_taboo", name: "Cảnh nóng cấm kỵ dày đặc", description: "Viết cảnh nóng dài, chi tiết tột độ, đa giác quan, arc kháng cự → buông xuôi, taboo gia đình, đa cao trào.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true, version: 5 },
+        { id: "skill_incest_storycraft", name: "Cấu trúc truyện cấm kỵ", description: "Cấu trúc truyện loạn luân hoàn chỉnh — tiến triển tâm lý, giữ không khí cấm kỵ, nhịp truyện, công cụ tâm lý.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true, version: 5 },
+        { id: "skill_wuxia", name: "Văn phong võ hiệp Kim Dung", description: "Tái tạo thần thái văn Kim Dung — Hán-Việt trang nhã, khí thế giang hồ, võ công có thế có ý, nội tâm bi tráng.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true, version: 5 },
       ];
       for (const def of defaultDefs) {
         if (!skills.find(s => s.id === def.id)) {
