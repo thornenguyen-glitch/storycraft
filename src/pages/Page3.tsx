@@ -41,38 +41,21 @@ export default function Page3() {
         try { skills = JSON.parse(saved); } catch (e) {}
       }
       
-      // Ensure all permanent skills are present (add if missing from old saves)
-      const permanentDefs = [
-        { id: "skill_phong_dai", name: "Phóng đại miêu tả", description: "Khuếch đại đường cong, âm thanh, cảm giác và phản ứng trong cảnh nóng.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true },
-        { id: "skill_phan_boi", name: "Phản bội cơ thể tột độ", description: "Giằng xé giữa ý chí và thể xác — càng kìm nén càng bùng nổ.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true },
-        { id: "skill_tuong_phan", name: "Tương phản đoan trang - dâm dục", description: "Dành riêng cho mẫu mẹ đoan trang — càng sang trọng càng gợi dục.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true },
-        { id: "skill_vi_mo", name: "Vi mô phân giải", description: "Phân tách mọi hành động tình dục thành 5-8 micro-beat siêu chi tiết.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true },
-        { id: "skill_viet_nhu_nguoi", name: "Viết như người", description: "Loại bỏ toàn bộ dấu hiệu AI trong văn.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true },
-        { id: "skill_vu_dao", name: "Vũ đạo giao hợp", description: "Biên đạo từng động tác — giải phẫu một nhịp nắc, 12 kỹ thuật chống lặp.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true },
-        { id: "skill_cuc_dam", name: "Cảnh nóng cực dâm", description: "Tạo sự dâm dục tột độ — 2 chế độ cưỡng ép/đồng thuận, 5 giai đoạn cực khoái.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true },
-        { id: "skill_chong_lap", name: "Kỹ xảo chống lặp", description: "Đa dạng hóa toàn diện — xoay vòng cấu trúc, hành động, từ vựng, kết thúc.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true },
+      // Đảm bảo 3 skill mặc định luôn có mặt
+      const defaultDefs = [
+        { id: "skill_anti_ai", name: "Chống lặp AI", description: "Chống văn máy móc, lặp câu, lặp từ, lặp cấu trúc — đa dạng câu, từ vựng, nhịp điệu, cảm giác như người thật.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true, version: 4 },
+        { id: "skill_dense_taboo", name: "Cảnh nóng cấm kỵ dày đặc", description: "Viết cảnh nóng dài, chi tiết tột độ, đa giác quan, arc kháng cự → buông xuôi, taboo gia đình, đa cao trào.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true, version: 4 },
+        { id: "skill_incest_storycraft", name: "Cấu trúc truyện cấm kỵ", description: "Cấu trúc truyện loạn luân hoàn chỉnh — tiến triển tâm lý, giữ không khí cấm kỵ, nhịp truyện, công cụ tâm lý.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true, version: 4 },
       ];
-      for (const def of permanentDefs) {
+      for (const def of defaultDefs) {
         if (!skills.find(s => s.id === def.id)) {
           skills.push(def);
         }
       }
 
-      // Add default toggleable skills if list is empty (besides permanent ones)
-      const toggleableDefs = [
-        { id: "skill_show_dont_tell", name: "Tả Cảnh Chân Thực (Show, Don't Tell)", description: "Tránh các từ ngữ tường thuật trực tiếp.", content: "NGUYÊN TẮC: TUYỆT ĐỐI KHÔNG dùng tính từ chỉ cảm xúc chung chung.", isActive: true },
-        { id: "skill_combat", name: "Chiến Đấu Kịch Tính", description: "Nhịp điệu câu văn nhanh, súc tích.", content: "NGUYÊN TẮC CHIẾN ĐẤU: Nhịp văn dồn dập, sử dụng câu ngắn.", isActive: false },
-        { id: "skill_psychology", name: "Chiều Sâu Nội Tâm", description: "Mâu thuẫn nội tâm sâu sắc.", content: "NGUYÊN TẮC NỘI TÂM: Tập trung sâu vào luồng suy nghĩ giằng xé.", isActive: false },
-        { id: "skill_dialogue", name: "Hội Thoại Thâm Sâu", description: "Lời thoại ngắn gọn, thâm thuý.", content: "NGUYÊN TẮC HỘI THOẠI: Lời đối thoại phải sắc bén, súc tích.", isActive: false },
-        { id: "skill_logic", name: "Logic truyện — Tình tiết hợp lý & Chân thực", description: "Nhân vật hành động có lý do, nhân quả rõ ràng, thời gian thực tế.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true },
-        { id: "skill_len_lut", name: "Lén lút — Hồi hộp & Kích thích cấm kỵ", description: "Cảnh lén lút (mê gian, sờ lén, lợi dụng lúc ngủ) — hồi hộp sợ hãi + kích thích cấm kỵ.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true },
-        { id: "skill_vo_hiep", name: "Võ hiệp Kim Dung", description: "Viết truyện võ hiệp phong cách Kim Dung — võ công, nội công, cảnh đánh võ, xưng hô giang hồ.", content: "Sẽ được cập nhật khi vào StoryEditor", isActive: true },
-      ];
-      for (const def of toggleableDefs) {
-        if (!skills.find(s => s.id === def.id)) {
-          skills.push(def);
-        }
-      }
+      // Xoá các skill cũ không còn dùng (skill cũ từ các phiên bản trước)
+      const oldSkillIds = ["skill_phong_dai","skill_phan_boi","skill_tuong_phan","skill_vi_mo","skill_viet_nhu_nguoi","skill_vu_dao","skill_cuc_dam","skill_chong_lap","skill_show_dont_tell","skill_combat","skill_psychology","skill_dialogue","skill_logic","skill_len_lut","skill_vo_hiep"];
+      skills = skills.filter(s => !oldSkillIds.includes(s.id));
 
       skills = skills.sort((a, b) => a.name.localeCompare(b.name));
       setWritingSkills(skills);
