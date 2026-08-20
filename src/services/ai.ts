@@ -936,9 +936,12 @@ Tác giả yêu cầu bạn thực hiện chỉ thị sau đây cho đoạn văn
 ---
 
 YÊU CẦU ĐẦU RA:
-- Viết CỰC KỲ CHI TIẾT, miêu tả tỉ mỉ hành động, môi trường và tâm lý (KHÔNG GIỚI HẠN DUNG LƯỢNG, viết càng dài càng tốt).
-- CHƯƠNG PHẢI CÓ ÍT NHẤT 20.000 KÝ TỰ (20.000 chữ số/tiếng Việt trở lên). Đây là YÊU CẦU BẮT BUỘC — phải viết đủ độ dài, không được cắt ngắn, không được kết thúc vội. Nếu chưa đạt 20.000 ký tự, hãy tiếp tục viết: phát triển thêm chi tiết tâm lý, mở rộng đối thoại, miêu tả thêm cảnh vật và diễn biến.
-- Phân bổ độ dài: càng nhiều chi tiết càng tốt — mỗi hành động, mỗi cảm xúc, mỗi đoạn hội thoại đều phải được khai thác sâu.
+- Viết CHI TIẾT, miêu tả tỉ mỉ hành động, môi trường và tâm lý.
+- CHỈ VIẾT ĐÚNG NHỮNG GÌ Ý TƯỞNG YÊU CẦU. Không tự ý thêm tình tiết, nhân vật, sự kiện ngoài ý tưởng người dùng đưa ra.
+- Độ dài tương xứng với độ dài ý tưởng: ý tưởng ngắn thì viết gọn, ý tưởng dài thì viết dài. Không cố kéo dài cho đủ số chữ.
+- Mỗi chi tiết miêu tả phải phục vụ ý tưởng — không viết lan man, không nhồi nhét.
+- CẤM TUYỆT ĐỐI: lặp lại câu, cụm từ, hình ảnh, ý đã viết ở phần trước. Mỗi câu phải mang thông tin MỚI.
+- QUAN TRỌNG NHẤT: Khi đã diễn đạt xong ý tưởng thì DỪNG LẠI — kết thúc đoạn văn tự nhiên. KHÔNG viết thêm, KHÔNG lặp lại, KHÔNG thêm cảnh mới chỉ để kéo dài.
 - TUYỆT ĐỐI TUÂN THỦ chỉ thị ở mục "NHIỆM VỤ TỐI THƯỢNG" phía trên.
 - Trả về trực tiếp nội dung truyện, không thêm bất kỳ lời dẫn giải nào.`;
 
@@ -949,6 +952,8 @@ YÊU CẦU ĐẦU RA:
       systemInstruction,
       temperature: 0.8,
       maxOutputTokens: 16384,
+      frequencyPenalty: 0.4,
+      presencePenalty: 0.3,
     }
   });
   return response.text;
@@ -1305,9 +1310,11 @@ Tác giả yêu cầu bạn thực hiện chỉ thị sau đây khi viết lại
 ---
 
 YÊU CẦU ĐẦU RA:
-- Viết lại CỰC KỲ CHI TIẾT (KHÔNG GIỚI HẠN DUNG LƯỢNG, viết càng dài càng tốt).
-- CHƯƠNG PHẢI CÓ ÍT NHẤT 20.000 KÝ TỰ (20.000 chữ số/tiếng Việt trở lên). Đây là YÊU CẦU BẮT BUỘC — phải viết đủ độ dài, không được cắt ngắn, không được kết thúc vội. Nếu chưa đạt 20.000 ký tự, hãy tiếp tục viết: phát triển thêm chi tiết tâm lý, mở rộng đối thoại, miêu tả thêm cảnh vật và diễn biến.
-- Phân bổ độ dài: càng nhiều chi tiết càng tốt — mỗi hành động, mỗi cảm xúc, mỗi đoạn hội thoại đều phải được khai thác sâu.
+- Viết lại CHI TIẾT, trau chuốt câu chữ.
+- CHỈ GIỮ ĐÚNG NHỮNG NỘI DUNG ĐÃ CÓ — không tự ý thêm tình tiết, nhân vật, sự kiện mới.
+- Độ dài tương đương hoặc hơi dài hơn bản gốc, không cố kéo dài.
+- CẤM TUYỆT ĐỐI: lặp lại câu, cụm từ, hình ảnh đã có trong bản gốc.
+- QUAN TRỌNG NHẤT: Khi đã viết lại xong toàn bộ nội dung thì DỪNG LẠI. KHÔNG viết thêm, KHÔNG lặp lại.
 - TUYỆT ĐỐI TUÂN THỦ chỉ thị ở mục "NHIỆM VỤ TỐI THƯỢNG" phía trên.
 - Chỉ trả về nội dung đã viết lại, không thêm bất kỳ lời dẫn giải nào.`;
 
@@ -1319,6 +1326,8 @@ YÊU CẦU ĐẦU RA:
       safetySettings,
       temperature: 0.8,
       maxOutputTokens: 16384,
+      frequencyPenalty: 0.4,
+      presencePenalty: 0.3,
     }
   });
   return response.text;
