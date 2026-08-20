@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import localforage from "localforage";
 import { Link } from "react-router-dom";
-import { continueStory, rewriteStory, fixStoryErrors, scanStoryErrors, suggestCharacterNames, suggestAppearance, generatePlotMap, scanFullStoryConsistency, analyzeWritingStyle, safeGenerateContent } from "../services/ai";
-import { Loader2, PenTool, Sparkles, Wand2, Copy, CheckCircle2, Trash2, Download, ArrowLeft, ArrowRight, Image as ImageIcon, Plus, ChevronDown, ChevronRight, Book, FileText, RefreshCw, Menu, PanelLeftClose, PanelLeftOpen, Settings, Save, Brain, X, RotateCcw, Shield, User, Globe, Share2, Facebook, Twitter, MessageCircle, Maximize2, Minimize2, Lightbulb, Users, Database, Upload, Flame, Map, Search, LogIn, LogOut, FileQuestion, Type } from "lucide-react";
+import { continueStory, rewriteStory, fixStoryErrors, scanStoryErrors, suggestCharacterNames, suggestAppearance, generatePlotMap, scanFullStoryConsistency, analyzeWritingStyle, getGeminiKeyPool, saveGeminiKeyPool, getGeminiKeyPoolStatus, clearGeminiKeyExhausted } from "../services/ai";
+import { Loader2, PenTool, Sparkles, Wand2, Copy, CheckCircle2, Trash2, Download, ArrowLeft, ArrowRight, Image as ImageIcon, Plus, ChevronDown, ChevronRight, Book, FileText, RefreshCw, Menu, PanelLeftClose, PanelLeftOpen, Settings, Save, Brain, X, RotateCcw, Shield, User, Globe, Share2, Facebook, Twitter, MessageCircle, Maximize2, Minimize2, Lightbulb, Users, Database, Upload, Flame, Map, Search, LogIn, LogOut, FileQuestion, Type, KeyRound } from "lucide-react";
 import { safeSetItem, safeGetItem, getStorageUsage } from "../utils/storage";
 import { useAuth } from "../contexts/AuthContext";
 import { WritingSkillsManager, WritingSkill } from "../components/WritingSkillsManager";
@@ -34,7 +34,7 @@ export default function StoryEditor() {
       id: "v1",
       title: "Quyển 1",
       chapters: [
-        { id: "c1", title: "Chương 1", content: "", summary: "" }
+        { id: "c1", title: "Chương 1", content: "" }
       ]
     }
   ]);
@@ -351,8 +351,28 @@ export default function StoryEditor() {
   const [storyMemory, setStoryMemory] = useState("");
   const [isMemoryOpen, setIsMemoryOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const [activeSettingsTab, setActiveSettingsTab] = useState<"genre" | "world" | "character" | "supporting" | "rules" | "plot" | "reference" | "mimic" | "skills">("genre");
+  const [activeSettingsTab, setActiveSettingsTab] = useState<"genre" | "world" | "character" | "supporting" | "rules" | "plot" | "reference" | "mimic" | "skills" | "apikeys">("genre");
   const [writingSkills, setWritingSkills] = useState<WritingSkill[]>([]);
+  const [keyPoolRaw, setKeyPoolRaw] = useState("");
+  const [keyPoolSaved, setKeyPoolSaved] = useState(false);
+  const [keyPoolStatus, setKeyPoolStatus] = useState<{ total: number; active: number; keys: { label: string; exhausted: boolean }[] }>({ total: 0, active: 0, keys: [] });
+
+  const refreshKeyPoolStatus = () => {
+    setKeyPoolStatus(getGeminiKeyPoolStatus());
+  };
+
+  const handleSaveKeyPool = () => {
+    saveGeminiKeyPool(keyPoolRaw);
+    setKeyPoolSaved(true);
+    setTimeout(() => setKeyPoolSaved(false), 2000);
+    refreshKeyPoolStatus();
+  };
+
+  useEffect(() => {
+    setKeyPoolRaw(getGeminiKeyPool().join("\n"));
+    refreshKeyPoolStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [worldSettings, setWorldSettings] = useState<any>({});
   const [characterSettings, setCharacterSettings] = useState<any>({});
   const [supportingCharacters, setSupportingCharacters] = useState<any[]>([]);
@@ -460,13 +480,10 @@ export default function StoryEditor() {
       if (savedSkills) {
         try {
           let skills = JSON.parse(savedSkills);
-          // Force reload nếu skill cũ (version < 4) hoặc thiếu version
-          const hasStaleVersion = skills.some((s: WritingSkill) => 
-            s.version !== undefined && s.version < 5
-          ) || skills.some((s: WritingSkill) => 
-            ["skill_anti_ai", "skill_dense_taboo", "skill_incest_storycraft", "skill_wuxia"].includes(s.id) && !s.version
+          const hasPlaceholder = skills.some((s: WritingSkill) => 
+            s.id?.startsWith("skill_") && s.content === "Sẽ được cập nhật khi vào StoryEditor"
           );
-          if (hasStaleVersion) {
+          if (hasPlaceholder) {
             forceReload = true;
           } else {
             setWritingSkills(skills);
@@ -476,44 +493,99 @@ export default function StoryEditor() {
         }
       }
       if (!savedSkills || forceReload) {
-        const P_SKILL_WUXIA = "# Wuxia Jin Yong Style (Văn phong võ hiệp Kim Dung)\n\n## Tổng quan\nTái tạo thần thái và khí vận trong văn Kim Dung: trang trọng mà không cứng nhắc, hào sảng mà vẫn có chiều sâu bi thương, miêu tả võ công vừa có hình vừa có ý, nhân vật vừa có cốt cách vừa có nội tâm phức tạp.\n\n## 1. Đặc trưng ngôn ngữ cốt lõi\n- Ưu tiên từ Hán-Việt trang nhã, điêu luyện, giàu hình tượng.\n- Câu văn thường dài, nhiều tầng ý, có nhịp điệu lên xuống rõ ràng như có nội lực vận chuyển.\n- Hay dùng phép đối, điệp ngữ, tăng tiến để tạo khí thế.\n- Khi cần nhấn mạnh, có thể dùng câu ngắn đột ngột như một chiêu thức đột phá.\nVí dụ: thay vì \"anh ta đánh rất mạnh\" → \"một chưởng ngang không chấn ra, khí lực như sóng thần đập vào bờ đá\". Thay vì \"cô ấy rất đẹp\" → \"dung nhan như hoa trong sương, vừa thanh lãnh vừa mê hoặc lòng người\".\n\n## 2. Miêu tả nhân vật\n- Nam nhân: nhấn mạnh phong phạm, cốt cách, ý chí, biến hóa nội tâm. Ngay cả ngoại hình cũng gắn với thần thái (mắt có khí, bước chân có lực, hơi thở có nhịp).\n- Nữ nhân: vừa sắc đẹp tuyệt thế vừa cốt cách riêng (nhu mì mà kiên cường, yêu kiều mà sát phạt, thanh lãnh mà sâu sắc). Tránh tả dục trần trụi hiện đại — dù có sắc tình cũng phải được bao bọc bởi lớp văn chương và bi kịch.\n\n## 3. Miêu tả võ công & hành động\n- Chiêu thức phải có \"thế\", có \"ý\", có dư ba.\n- Không chỉ tả động tác bên ngoài, mà còn tả nội lực vận hành, chân khí chuyển động, không khí xung quanh bị ảnh hưởng.\n- Có thể pha chút giả tưởng cổ điển (kinh mạch, đan điền, kiếm khí, chưởng lực...).\n- Khi hai người giao thủ, phải tạo được cảm giác khí thế đối đầu, không khí căng như sợi tơ.\n\n## 4. Nhịp văn và không khí\n- Đoạn văn chuyển tiếp chậm rãi, trang trọng ở phần mở.\n- Khi vào cao trào (đấu võ, xúc động mạnh) thì nhịp dồn dập hơn, nhưng vẫn giữ vẻ cổ phong, không loạn.\n- Thường có đoạn miêu tả tâm cảnh hoặc độc thoại nội tâm rất sâu, mang màu sắc suy tư, bi thương hoặc ngộ ra lẽ đời.\n\n## 5. Cách viết tình cảm & dục vọng\n- Tình cảm hàm súc, có chiều sâu, thường đi kèm bi kịch, ngang trái hoặc định mệnh.\n- Nếu có yếu tố sắc tình, phải viết bằng ngôn ngữ trang nhã, gợi hơn là tả trực diện. Dùng hình ảnh thiên nhiên, khí hậu, nội lực để ẩn dụ.\n- Tránh từ ngữ thô tục hiện đại. Dù nóng bỏng vẫn phải giữ được lớp \"văn\" bên ngoài.\n\n## 6. Kỹ thuật nâng cao\n- Khí thế: Mỗi đoạn quan trọng nên có một luồng \"khí\" nhất quán (hào sảng, bi tráng, lạnh lẽo, u uất...).\n- Dư ba: Sau hành động mạnh, để lại khoảng lặng hoặc câu văn dư âm.\n- Tương phản: giữa vẻ ngoài và nội tâm, giữa sức mạnh và mềm yếu, giữa ân và oán.\n- Thời gian & không gian: tạo cảm giác câu chuyện diễn ra trong một thế giới cổ trang có bề dày lịch sử và quy tắc giang hồ.\n\n## 7. Những điều cần tránh\n- Từ lóng hiện đại, cách nói của mạng xã hội.\n- Câu văn quá ngắn, khô khan hoặc quá \"sạch sẽ\" kiểu AI thông thường.\n- Miêu tả dục vọng trần trụi, trực diện theo phong cách hiện đại.\n- Làm mất đi không khí giang hồ và cảm giác thời đại xa xưa.\n- Lặp lại cấu trúc câu quá đều đặn (cần có sự biến hóa tự nhiên).\n\n## 8. Mục tiêu cuối cùng\nĐoạn văn phải mang lại cảm giác: như đang đọc một đoạn trong tiểu thuyết võ hiệp kinh điển của Kim Dung. Có khí thế, có thần thái, có chiều sâu nội tâm. Trang trọng mà vẫn sống động, cổ điển mà không khô cứng.";
-        const P_SKILL_ANTI_AI = "# Anti-AI Repetition\n\n## Core Rules Against Repetition\n\n### 1. Sentence Structure Variation\n- Never write more than two consecutive sentences with the same structure (e.g. \"I did X. I did Y. I did Z.\").\n- Mix short, abrupt sentences with long, flowing ones.\n- Occasionally start with the object or sensation instead of the subject (\"The heat of her walls...\", \"A sudden clench...\").\n- Use fragments for intensity (\"Too tight. Too wet. Fuck.\").\n\n### 2. Vocabulary Rotation\n- Do not reuse the same adjective for the same body part within a short span.\n  - Instead of repeating \"mềm mại\", rotate: mềm, nóng, săn chắc, đàn hồi, nhão ra, căng bóng...\n- Avoid stacking the same intensifiers (\"rất\", \"cực kỳ\", \"vô cùng\") too often.\n- When describing thrusting, change the verb frequently: đâm, đẩy, nện, nghiền, rút rồi đâm mạnh, từ từ nhấn vào, hích ngắn...\n\n### 3. Sensory Order Mixing\nTypical AI pattern: sight → touch → sound → reaction (always in that order). Break it.\n- Sometimes start with sound or internal sensation.\n- Sometimes jump straight to the partner's facial reaction before describing the physical action.\n- Occasionally describe only one sense in high detail and skim the others.\n\n### 4. Paragraph Rhythm\n- Avoid neat, evenly sized paragraphs.\n- Let some paragraphs be long and dense.\n- Let others be only one or two raw sentences.\n- After a long descriptive block, drop a short, blunt line for impact.\n\n### 5. Detail Recycling Ban\n- If you already described how wet she is, do not describe the wetness the same way again immediately.\n- If you just wrote about her breasts bouncing, switch focus to her face, her hands, her breathing, or the sound for a while.\n- Track what has been heavily described in the last 300-400 words and deliberately avoid repeating those exact images.\n\n### 6. Common AI Phrases to Avoid or Limit\n- \"Không kìm được\"\n- \"Một luồng khoái cảm\"\n- \"Toàn thân run rẩy\"\n- \"Ánh mắt mê dại\"\n- \"Hành động thô bạo nhưng...\"\n- Overuse of \"như muốn...\" and \"đến mức...\"\nReplace them with more specific, concrete observations.\n\n### 7. Human Imperfection Techniques\n- Let the narrator notice small, slightly awkward details (a strand of hair stuck to her lip, the way her knee digs into his side, the sound of the bed creaking unevenly).\n- Allow slight contradictions in sensation (\"It felt too deep and somehow not deep enough\").\n- Occasionally let the narrator's attention drift for a second before snapping back.\n\n### 8. Practical Checklist While Writing\nBefore finishing a long passage, ask:\n- Have I used the same sentence pattern three times in a row?\n- Have I described her wetness / tightness / moaning the exact same way twice already?\n- Is every paragraph roughly the same length?\n- Am I starting most sentences with \"Tôi\" or \"Mẹ\"?\n- Does this stretch feel too smooth and polished?\nIf yes to any, rewrite for more variation and roughness.";
-        const P_SKILL_DENSE_TABOO = "# Dense Taboo Erotica\n\n## Core Writing Rules\n\n### 1. Point of View & Immersion\n- Stay tightly in first-person.\n- Continuously report both the narrator's physical sensations and their observation of the partner's body, face, and reactions.\n- Internal monologue should mix lust, conquest, guilt, and ownership.\n\n### 2. Sensory Density\nEvery significant action must engage multiple senses:\n- Sight: expression, flush, fluids, marks, trembling, stretched flesh.\n- Touch: heat, tightness, wetness, pressure, texture, pulsing.\n- Sound: wet impacts, breathing, moans, skin slap, squelching.\n- Smell & Taste: sweat, sex, saliva, fluids when relevant.\nNever summarize sex. Expand.\n\n### 3. Psychological Resistance Arc\nStructure long scenes as:\n1. Active resistance (verbal + physical)\n2. Body betrays mind (unwanted wetness, moans, flushing)\n3. Fragmented surrender (mixed insults + pleas + involuntary cooperation)\n4. Post-climax shame and confusion\nKeep resistance believable for as long as possible.\n\n### 4. Family Taboo Reinforcement\nNever let the blood relationship fade.\n- Frequent use of \"mẹ\", \"con\", \"con trai\", \"mẹ của con\".\n- Contrast with the legitimate partner (\"Ba never...\", \"This is your husband's wife...\").\n- Remind public identity vs current degradation (lawyer, respected mother, etc.).\n- Weaponize future consequences (pregnancy, discovery, family destruction).\n\n### 5. Complex Positions\nWhen using lift, carry, standing, or full-control positions:\n- Clearly describe grip, leverage, weight distribution, and restriction.\n- Show how the position limits resistance and increases depth/exposure.\n- Re-establish sensation after every position change.\n\n### 6. Mirror & Humiliation Play\nWhen a mirror is present:\n- Force the receiving character to watch their own face and body.\n- Describe the reflection in detail (expression, fluids, stretched hole, bouncing flesh).\n- Use the aggressor's voice to narrate the shame back to them.\n- Keep them facing the mirror during and after climax.\n\n### 7. Breeding / Creampie Panic\nWhen internal ejaculation carries pregnancy risk:\n- Make the fertile window explicit (\"ngày nguy hiểm\", \"rụng trứng\").\n- Escalate begging and terror as climax approaches.\n- Focus on the physical sensation of cum flooding deep.\n- Show the irreversible aftermath (fullness, slow leak, hand on belly, psychological collapse).\n\n### 8. Post-Orgasm Shame\nAfter major climax:\n- Stay with oversensitivity, trembling, leaking fluids.\n- Show the sudden return of shame once pleasure fades.\n- Force continued exposure (eye contact, mirror, dirty talk).\n- Let residual pleasure and humiliation remain tangled.\n\n### 9. Pacing Long Scenes\n- Treat the encounter as a sequence of escalating beats, not repeated thrusts.\n- Change focus (depth → speed → angle → added stimulation → psychological pressure).\n- Insert short recovery moments that still contain sensation and dialogue.\n- Track fluids, marks, resistance level, and arousal across the entire scene.\n\n### 10. Thrust Variation Control\nNever let thrusting stay the same for too long. Continuously change:\n- Depth (shallow → mid → full → grinding)\n- Speed (slow heavy → fast punishing → sudden stops)\n- Angle (straight → tilted → side grinding)\n- Force and rhythm (long strokes mixed with short rapid ones)\nEvery 4-6 thrusts should feel noticeably different.\n\n### 11. Multi-Climax Chain\nWhen writing multiple orgasms:\n- First climax: strong but still somewhat controlled.\n- Second: arrives faster, more intense.\n- Third and later: hypersensitive, easier to trigger, more extreme reactions, less recovery time.\nKeep stimulating immediately after each peak. Show progressive loss of control and increasing fluids.\n\n### 12. Simultaneous Stimulation\nDuring penetration, layer multiple actions at the same time:\n- Thrusting + groping/squeezing breasts\n- Thrusting + kissing / licking neck or ear\n- Thrusting + slapping or gripping ass\n- Thrusting + rubbing clit\n- Thrusting + hair pulling or forced eye contact\nShow the receiving character being overwhelmed by combined sensations.\n\n### 13. Language (Vietnamese)\nPrefer direct, vulgar, commonly used erotic terms:\n- côn thịt, dương vật, quy đầu, tiểu huyệt, lỗ thịt, hoa tâm, dâm thủy, tinh dịch, vú, mông...\nAvoid soft literary euphemisms when the tone is raw.\n\n## Output Expectation\nScenes should feel long, physically exhausting, psychologically heavy, and unrelentingly detailed. Never fade to black on the important moments.";
-        const P_SKILL_INCEST_STORYCRAFT = "# Incest Taboo Storycraft\n\n## 1. Core Relationship Dynamics\n\n### Mother Character\n- Start from a position of authority, dignity, and self-control (lawyer, teacher, respected wife, etc.).\n- Her fall should feel gradual and internally conflicted, not sudden total submission.\n- Key internal conflicts: maternal duty vs. desire, social face vs. physical craving, guilt vs. pleasure.\n- Even after multiple encounters, she should still experience shame and attempts to reassert control.\n\n### Son Character\n- Can be obsessive, possessive, or calculating.\n- Pleasure should be mixed with the thrill of conquest and ownership over the woman who raised him.\n- Internal monologue frequently reminds the reader of the blood relationship and the power shift.\n\n## 2. Story Progression Structure (Recommended)\n\n1. Seed of Taboo — Accidental glimpse, lingering touch, inappropriate thought, or charged atmosphere. Very light.\n2. Testing Boundaries — Intentional but deniable actions (standing too close, \"accidental\" touches, loaded conversations).\n3. First Clear Violation — A definite crossing of the line (groping, forced kiss, watching her, etc.). Resistance is strong.\n4. Repeated Transgressions — Escalation through multiple incidents. Each time the mother's resistance weakens a little more, or her body betrays her faster.\n5. Point of No Return — Full sexual intercourse. Heavy emotional fallout afterward.\n6. Corruption Deepens — The relationship becomes a secret ongoing affair. Mix of coercion, mutual lust, guilt, and possessiveness.\n7. Possible Endings / Ongoing Tension — Discovery risk, pregnancy fear, emotional dependency, or the mother trying (and failing) to end it.\n\n## 3. Maintaining the Forbidden Atmosphere\nNever let the story become \"just another couple having sex.\" Continuously reinforce:\n- Blood relationship (\"mẹ\", \"con trai\", \"người đã sinh ra con\")\n- Social role contrast (respected lawyer / mother vs. current degraded state)\n- Risk of discovery (husband, relatives, colleagues, society)\n- Moral and emotional consequences\n- The mother's internal voice of guilt and self-disgust mixed with unwanted arousal\n\n## 4. Pacing Principles\n- Sex scenes should feel earned by prior tension.\n- Alternate between explicit scenes and charged non-sex scenes (daily life with new awareness, stolen glances, internal monologues).\n- After major sex scenes, give space for shame, attempts to return to normal, and the slow re-ignition of desire.\n- Avoid making the mother fully willing too early. Keep some resistance or emotional conflict alive.\n\n## 5. Language & Style Guidance\n- Prefer the dense, slightly elevated, translated-from-Chinese rhythm when writing explicit scenes.\n- Mix Hán-Việt terms with vulgar spoken terms naturally.\n- Keep long, sensory-heavy descriptive passages during physical intimacy.\n- In non-sex sections, still describe the mother's body and presence in a subtly eroticized way.\n\n## 6. Psychological Tools\n- Body betrayal: The mother's body reacts before her mind accepts.\n- Rationalization: Both characters invent excuses (\"just once\", \"I couldn't control myself\", \"it's only physical\").\n- Ownership shift: The son increasingly treats the mother's body as his.\n- Shame as fuel: The stronger her shame, the more intense the scene can become.\n\n## 7. What to Avoid\n- Instant full consent with no internal struggle.\n- Forgetting the family context for long stretches.\n- Making the mother purely passive after the first time.\n- Clean, romantic tone that removes the dirtiness of the taboo.";
         const defaultSkills: WritingSkill[] = [
           {
-            id: "skill_anti_ai",
-            name: "Chống lặp AI",
-            description: "Chống văn máy móc, lặp câu, lặp từ, lặp cấu trúc — đa dạng câu, từ vựng, nhịp điệu, cảm giác như người thật. CÓ THỂ BẬT TẮT.",
-            content: P_SKILL_ANTI_AI,
-            isActive: true,
-            version: 5
+            id: "skill_show_dont_tell",
+            name: "Tả Cảnh Chân Thực (Show, Don't Tell)",
+            description: "Tránh các từ ngữ tường thuật trực tiếp trạng thái cảm xúc. Thay thế bằng các mô tả vật lý, phản ứng cơ thể và giác quan.",
+            content: "NGUYÊN TẮC: TUYỆT ĐỐI KHÔNG dùng tính từ chỉ cảm xúc chung chung như 'tức giận', 'buồn bã', 'hạnh phúc', 'lo sợ'. Hãy thay bằng việc tả nhịp tim nhanh, khớp ngón tay siết chặt, mồ hôi lạnh, ánh mắt nhìn chằm chằm, hoặc giọng nói run rẩy. Sử dụng ít nhất 2 trong 5 giác quan (thị giác, thính giác, khứu giác, xúc giác, vị giác) khi đặc tả không gian hoặc trạng thái vật lý.",
+            isActive: true
           },
           {
-            id: "skill_dense_taboo",
-            name: "Cảnh nóng cấm kỵ dày đặc",
-            description: "Viết cảnh nóng dài, chi tiết tột độ, đa giác quan, arc kháng cự → buông xuôi, taboo gia đình, đa cao trào. CÓ THỂ BẬT TẮT.",
-            content: P_SKILL_DENSE_TABOO,
-            isActive: true,
-            version: 5
+            id: "skill_combat",
+            name: "Chiến Đấu Kịch Tính",
+            description: "Nhịp điệu câu văn nhanh, súc tích, tập trung vào mô tả va chạm vật lý và động tác thay vì suy nghĩ dông dài.",
+            content: "NGUYÊN TẮC CHIẾN ĐẤU: Nhịp văn dồn dập, sử dụng câu ngắn. Đặc tả chính xác hướng xuất chiêu, âm thanh va chạm của binh khí, lực cản của không khí hoặc áp lực sóng khí. Giảm thiểu các độc thoại nội tâm hoặc phân tích tâm lý dài dòng giữa trận đánh. Hãy giữ cho trận đấu trở nên sinh tử, kịch tính từng giây.",
+            isActive: false
           },
           {
-            id: "skill_incest_storycraft",
-            name: "Cấu trúc truyện cấm kỵ",
-            description: "Cấu trúc truyện loạn luân hoàn chỉnh — tiến triển tâm lý, giữ không khí cấm kỵ, nhịp truyện, công cụ tâm lý. CÓ THỂ BẬT TẮT.",
-            content: P_SKILL_INCEST_STORYCRAFT,
-            isActive: true,
-            version: 5
+            id: "skill_psychology",
+            name: "Chiều Sâu Nội Tâm",
+            description: "Đặc tả các mâu thuẫn nội tâm sâu sắc, sự giằng xé giữa các quyết định khó khăn và những tổn thương trong quá khứ.",
+            content: "NGUYÊN TẮC NỘI TÂM: Tập trung sâu vào luồng suy nghĩ giằng xé, tranh đấu tư tưởng của nhân vật trước một quyết định lớn. Gợi nhắc một cách ẩn dụ về những ký ức đau buồn, vết sẹo danh tính, hoặc lý tưởng sống của nhân vật để tăng chiều sâu cảm xúc.",
+            isActive: false
           },
           {
-            id: "skill_wuxia",
-            name: "Văn phong võ hiệp Kim Dung",
-            description: "Tái tạo thần thái văn Kim Dung — Hán-Việt trang nhã, khí thế giang hồ, võ công có thế có ý, nội tâm bi tráng. CÓ THỂ BẬT TẮT.",
-            content: P_SKILL_WUXIA,
-            isActive: true,
-            version: 5
+            id: "skill_dialogue",
+            name: "Hội Thoại Thâm Sâu",
+            description: "Lời thoại ngắn gọn, thâm thuý, phù hợp với thân phận và có nhiều tầng nghĩa ẩn dụ che giấu ý định thật.",
+            content: "NGUYÊN TẮC HỘI THOẠI: Lời đối thoại giữa các nhân vật phải sắc bén, súc tích, tránh dông dài vô nghĩa. Nhân vật mạnh nói lời uy áp, nhân vật nguy hiểm nói lời ẩn ý, giả tạo. Hãy để các nhân vật giao tiếp bằng ánh mắt, cử chỉ nhỏ đan xen kẽ trong lúc nói chuyện.",
+            isActive: false
           }
         ];
+        // Add permanent skill: Phóng đại miêu tả
+        const P_SKILL_PHONG_DAI = "BẠN PHẢI TUÂN THỦ TUYỆT ĐỐI CÁC QUY TẮC SAU KHI VIẾT:\n\n1. PHÓNG ĐẠI ĐƯỜNG CONG & VÓC DÁNG:\n- Miêu tả các đường cong cơ thể với sự phóng đại gợi cảm, KẾT HỢP cả hình ảnh cụ thể lẫn chất liệu cao cấp:\n  . Vòng eo: \"thon nhỏ chỉ bằng một gang tay\", \"nhỏ như chỉ cần một bàn tay là ôm trọn\".\n  . Cặp nhũ hoa: \"căng tròn nõn nà như hai quả bưởi mọng nước\", \"căng tràn sức sống, đầu vú hồng hào như nụ đào\".\n  . Cặp mông: \"căng tròn nở nang như hai quả dưa hấu\", \"căng tròn như đúc tạc bởi bàn tay của tạo hóa\", \"sánh đôi đầy đặn\".\n  . Cặp đùi: \"nõn nà căng tràn nhựa sống\", \"thon dài nuột nà như hai cột ngọc\".\n  . Tấm lưng: \"mềm mại uốn cong như dải lụa đào\", \"lưng trần trắng ngần\".\n  . Thân hình: \"nở nang như tượng tạc\", \"bốc lửa\", \"đường cong chữ S hoàn hảo\".\n- Dùng các từ: căng tràn, nõn nà, mềm mại, đầy đặn, nở nang, nuột nà, căng tròn, trắng ngần, hồng hào.\n\n2. PHÓNG ĐẠI ÂM THANH:\n- Khuếch đại âm thanh: \"tiếng rên nghẹn ngào vang vọng\", \"âm thanh ướt át hòa cùng tiếng thở dốc dồn dập\", \"tiếng nước phòm bép tách tách không ngớt\".\n- Các từ gợi âm: vang vọng, nghẹn ngào, dồn dập, phòm bép, tách tách, ướt át.\n\n3. PHÓNG ĐẠI CẢM GIÁC — CỰC DÂM:\n- Cảm giác được đẩy lên tột cùng, miêu tả sự phản bội của cơ thể:\n  . \"Khoái cảm như hàng vạn con kiến bò từ xương sống lan tỏa khắp tứ chi\"\n  . \"Luồng điện cực mạnh phóng dọc từ não xuống tận tử cung, khiến toàn thân co giật không kiểm soát\"\n  . \"Cảm giác tê dại ngọt ngào như có hàng ngàn chiếc lông vũ đồng thời khẽ lướt trên làn da\"\n  . \"Dòng khoái cảm mãnh liệt như thủy triều dâng trào, cuốn phăng mọi lý trí\"\n  . \"Sự sung sướng như một cơn lốc xoáy hút nàng vào vòng xoáy mất kiểm soát\"\n  . \"Khoái cảm tột đỉnh như một tiếng nổ âm thầm bên trong cơ thể, khiến nàng tan chảy ra từng mảnh\"\n- Nhấn mạnh sự tương phản: bên ngoài cố kìm nén (cắn môi, nắm chặt tay, nghiến răng) nhưng bên trong bão tố, tan chảy, rã rời.\n- Dùng từ cực mạnh: bùng nổ, vỡ òa, nhấn chìm, cuốn phăng, tan chảy, tê tái, rã rời, co giật, lên đỉnh.\n\n4. PHÓNG ĐẠI PHẢN ỨNG — DÂM DỤC TỘT ĐỘ:\n- Phản ứng cơ thể không kiểm soát, càng cố kìm càng lộ rõ:\n  . \"Mắt nàng trợn ngược, môi mím chặt cố kìm tiếng rên nhưng rốt cuộc vẫn bật ra nghẹn ướt run rẩy\"\n  . \"Cơ thể nàng cong lên như cánh cung bị kéo căng hết cỡ, hông giật lên từng hồi không tự chủ\"\n  . \"Hơi thở đứt quãng, vừa thở vừa rên, vừa cố nói 'không' nhưng âm thanh phát ra lại là tiếng rên dài đầy ham muốn\"\n  . \"Nghiến chặt răng đến mức khớp hàm đau nhức, nhưng nước mắt khoái cảm vẫn trào ra từ khóe mi\"\n  . \"Bàn tay bấu chặt ga giường, khớp ngón tay trắng bệch, cặp đùi giật bắn từng hồi\"\n  . \"Miệng lẩm bẩm 'không, không thể' xen giữa tiếng thét nghẹn ngào khi lên đỉnh\"\n- NHẤN MẠNH: Nhân vật nữ TUYỆT ĐỐI KHÔNG chủ động/chấp thuận — nhưng cơ thể phản bội một cách nhục nhã.\n\n5. PHÓNG ĐẠI THỜI GIAN & KHÔNG GIAN:\n- Thời gian: \"từng giây kéo dài như vô tận\", \"thời gian như ngừng trôi\", \"một khắc như ngàn thu\".\n- Không gian: \"căn phòng như thu nhỏ lại chỉ còn tiếng thở của nhau\", \"cả thế giới như ngừng quay\".\n\n6. BIỆN PHÁP SO SÁNH ƯU TIÊN:\n- So sánh với trái cây: bưởi, dưa hấu, đào, mận.\n- So sánh với chất liệu cao cấp: lụa, nhung, ngọc, gấm, men sứ.\n- So sánh với thiên nhiên: mây, nước, gió, sóng, lửa, thủy triều.\n- So sánh với điêu khắc: tượng tạc, đúc tạc, bàn tay tạo hóa.\n\n7. TUYỆT ĐỐI CẤM:\n- Viết hời hợt, qua loa.\n- Dùng từ thô thiển, quê mùa.\n- Bỏ qua cơ hội phóng đại.\n- Kết thúc cảnh nóng đột ngột.\n- LẶP LẠI CÙNG MỘT TỪ/CỤM TỪ MIÊU TẢ TRONG CÙNG MỘT ĐOẠN. Mỗi câu phải mang một hình ảnh, một so sánh MỚI.";
+        defaultSkills.push({
+          id: "skill_phong_dai",
+          name: "Phóng đại miêu tả",
+          description: "Khuếch đại đường cong, âm thanh, cảm giác và phản ứng trong cảnh nóng — dùng hyperbole để tăng kịch tính và gợi hình cực dâm.",
+          content: P_SKILL_PHONG_DAI,
+          isActive: true
+        });
+        // Add permanent skill: Phản bội cơ thể tột độ
+        const P_SKILL_PHAN_BOI = "BẮT BUỘC TUÂN THỦ KHI VIẾT CẢNH NÓNG:\n\nNGUYÊN LÝ PHẢN BỘI:\n- Ý thức nói \"không\" → cơ thể đáp lại \"có\" một cách nhục nhã\n- Mỗi lần nhân vật nữ cố kìm nén là một lần cơ thể phản bội dữ dội hơn\n- Sự xấu hổ càng lớn → kích thích càng tăng → phản ứng càng mạnh\n- Vòng xoáy: cố kìm → thất bại → nhục nhã → kích thích → phản bội\n\nTÍN HIỆU Ý CHÍ (cố kìm nén — thất bại ngay lập tức):\n- \"Nàng cắn chặt môi đến bật máu nhưng tiếng rên vẫn thoát ra\"\n- \"Nàng quay mặt đi, nhắm nghiền mắt, hai tay nắm chặt — nhưng hông vẫn vô thức đẩy lên\"\n- \"Trong đầu chỉ còn một tiếng nói: 'không được, không được' — nhưng miệng đã hé mở đón nhận\"\n- \"Nàng cố đẩy hắn ra nhưng đôi tay yếu ớt lại vòng qua cổ hắn lúc nào không hay\"\n\nDẤU HIỆU PHẢN BỘI KHÔNG THỂ CHỐI CÃI:\n- Đầu vú cương cứng dù nàng có cố che ngực đến đâu\n- Nước nhờn chảy ướt đẫm dù nàng có khép chặt đùi\n- Đồng tử giãn rộng, da đỏ ửng, hơi thở gấp gáp\n- Cơ bụng co thắt từng hồi, bụng dưới nóng ran\n- Chân tay bủn rủn, mất kiểm soát, không đứng vững\n\nCỰC ĐIỂM NHỤC NHÃ — LÊN ĐỈNH TRONG TỦI HỔ:\n- Cao trào đến khi nàng đang cố van xin dừng lại — cơ thể phản bội lên đỉnh ngay giữa câu nói\n- Nàng thét lên vì khoái cảm rồi òa khóc vì xấu hổ\n- \"Nhìn xem, em nói không nhưng cơ thể em đâu có nói dối\"\n- Sau lên đỉnh: nàng run bần bật, quay mặt giấu nước mắt, im lặng vì nhục\n\nVÒNG LẶP CÀNG SÂU CÀNG MẤT KIỂM SOÁT:\n- Lần 1: cố kìm → thất bại → nhục\n- Lần 2: cố kìm yếu ớt hơn → thất bại nhanh hơn → nhục hơn\n- Lần 3: gần như không kìm nữa → buông xuôi → càng nhục vì buông xuôi quá nhanh\n- Lần 4+: hoàn toàn để cơ thể dẫn dắt — nhưng ý thức vẫn còn — nhục nhã tận cùng\n\nTUYỆT ĐỐI KHÔNG:\n- Nhân vật nữ chủ động hoặc tình nguyện\n- Nhân vật nữ thừa nhận thích thú bằng lời nói\n- Mất đi sự xấu hổ — xấu hổ là gia vị chính";
+        defaultSkills.push({
+          id: "skill_phan_boi",
+          name: "Phản bội cơ thể tột độ",
+          description: "Giằng xé giữa ý chí và thể xác — càng kìm nén càng bùng nổ. Dành cho nhân vật nữ bị cưỡng ép.",
+          content: P_SKILL_PHAN_BOI,
+          isActive: true
+        });
+        // Add permanent skill: Tương phản đoan trang - dâm dục
+        const P_SKILL_TUONG_PHAN = "BẮT BUỘC TUÂN THỦ KHI VIẾT:\n\nTƯƠNG PHẢN TRANG PHỤC:\n- Váy công sở/áo sơ mi trắng chỉnh tề → bị xé rách/vén lên → càng sang càng dâm\n- Áo sơ mi trắng ướt đẫm mồ hôi, phảng phất mùi nước hoa cao cấp quyện cùng mùi thể xác\n- Váy bị vén lên, gấu váy còn kẹp ở eo — lớp vải lụa đắt tiền giờ nhàu nhĩ\n- Cổ áo bị kéo tuột, khuy ngọc lăn long lóc trên sàn\n\nTƯƠNG PHẢN HÀNH VI:\n- Dáng vẻ đoan trang ngoài xã hội ↔ dáng vẻ dâm dục trên giường\n- Giọng nói nghiêm nghị thường ngày ↔ giọng rên rỉ đứt quãng\n- Ánh mắt sắc sảo của người phụ nữ quyền lực ↔ ánh mắt mờ đặc hơi nước\n- Đôi tay từng viết chữ ký tỷ đô ↔ đôi tay bấu chặt ga giường trắng bệch\n- Dáng đi uyển chuyển quyền quý ↔ cặp đùi run rẩy không khép nổi\n\nTƯƠNG PHẢN Ý THỨC - CƠ THỂ:\n- Trong đầu: \"Mình là mẹ, mình là vợ của người ta, mình không thể như thế này\"\n- Cơ thể: hông tự động đẩy lên, miệng há ra đón nhận\n- Kết quả: nhục nhã tột cùng khi nhận ra bản thân hai mặt\n\nCHI TIẾT GỢI SỰ ĐỐI LẬP CỦA ĐỊA VỊ:\n- Vẫn còn đeo đồng hồ/trang sức đắt tiền khi bị làm tình\n- Son môi bị nhòe dù đã trang điểm kỹ\n- Tóc vấn gọn bị xõa tung\n- Giọt mồ hôi chảy dài trên làn da trắng muốt\n- Hơi thở phả ra mùi rượu vang/hương cafe hòa cùng tiếng rên";
+        defaultSkills.push({
+          id: "skill_tuong_phan",
+          name: "Tương phản đoan trang - dâm dục",
+          description: "Dành riêng cho mẫu mẹ đoan trang — càng sang trọng càng gợi dục.",
+          content: P_SKILL_TUONG_PHAN,
+          isActive: true
+        });
+        // Add permanent skill: Vi mô phân giải
+        const P_SKILL_VI_MO = "BẮT BUỘC TUÂN THỦ KHI VIẾT CẢNH NÓNG:\n\nNGUYÊN TẮC VI MÔ: Mỗi hành động tình dục phải được chia thành 5-8 giai đoạn siêu chi tiết. Không gộp chung, không tóm tắt.\n\n7 TEMPLATE HÀNH ĐỘNG:\n\n1. HÔN (7 giai đoạn): Tiếp cận → Chạm môi (khô, ấm, mẹ mím) → Ngậm môi dưới mút nhẹ (chụt chụt, nước bọt) → Mút lưỡi (lưỡi quấn, nước bọt tràn) → Khẩu dâm (con thì thầm, mẹ nghiến răng) → Nước bọt & liếm (sợi kéo dài, liếm cằm) → Chuyển (môi sưng đỏ)\n\n2. BÓP VÚ (8 giai đoạn): Tiếp cận → Chạm đầu (lòng bàn tay áp, nóng) → Mơn trớn (lướt chậm từ chân lên đỉnh) → Bóp nhẹ (năm ngón siết, thịt lún) → Khẩu dâm → Đại lực bóp (bóp mạnh, nhào nặn, run) → Biến tấu (vê, kéo, ấn đầu vú) → Chuyển\n\n3. SỜ LỒN (7 giai đoạn): Tiếp cận → Chạm đầu (lông mu, khe hẹp, ướt) → Mơn trớn (lướt dọc môi hoa) → Tác động nhẹ (hột le, một đốt ngón tay) → Khẩu dâm → Tăng lực (vào sâu, day mạnh) → Kết thúc (rút ra, bóng loáng dâm thủy)\n\n4. ĐỤ (8 giai đoạn): Tiếp cận → Chạm đầu (quy đầu ấn môi hoa) → Vào từng mm (chậm, từng milimet, cảm giác đầy) → Vào sâu (đường gân cọ thành trong) → Vào hết (cực vật nằm trong, nóng) → Di chuyển chậm (phòm, ngực nảy) → Tăng tốc (phòm liên hồi) → Xuất tinh (tinh dịch nóng, nhiều luồng)\n\nINSIDE-OUTSIDE CONTRAST (BẮT BUỘC MỖI GIAI ĐOẠN):\nMỗi giai đoạn phải có ít nhất một cặp tương phản ngoài-trong của mẹ:\n- Bên ngoài: nghiến răng, mắng \"Đồ súc sinh!\", tay đẩy ra, lắc đầu \"Không\", cắn môi chảy máu, im lặng lạnh lùng, mặt lạnh như tiền\n- Bên trong: đầu vú cứng, dâm thủy rỉ, tim đập nhanh, mặt đỏ, đùi run, cơ thể mở, hơi thở gấp, da nóng bừng, bụng co thắt, dâm thủy chảy xuống đùi\n- Công thức: Câu tả ngoài → Ngay sau: câu tả trong mâu thuẫn\n- Ví dụ: \"Mẹ nghiến răng, mắt long lên gào 'Đồ súc sinh!' — nhưng dưới bàn tay con, đầu vú mẹ càng cứng hơn, và một dòng dâm thủy ấm nữa lại rỉ ra.\"\n\nMỞ RỘNG TEMPLATE: Được bỏ/thêm/đảo/lặp giai đoạn tuỳ ý, miễn là ≥5 giai đoạn mỗi hành động.";
+        defaultSkills.push({
+          id: "skill_vi_mo",
+          name: "Vi mô phân giải",
+          description: "Phân tách mọi hành động tình dục thành 5-8 micro-beat siêu chi tiết. Kèm Inside-Outside Contrast bắt buộc.",
+          content: P_SKILL_VI_MO,
+          isActive: true
+        });
+        // Add permanent skill: Viết như người
+        const P_SKILL_VIET_NHU_NGUOI = "BẮT BUỘC TUÂN THỦ CÁC QUY TẮC SAU ĐỂ VĂN KHÔNG CÓ MÙI AI:\n\nCẤM DÙNG CÁC TỪ/CỤM SAU:\n- Khoa trương: \"bước vào thế giới\", \"mở ra chương mới\", \"bức tranh toàn cảnh\", \"dấu ấn khó phai\", \"chạm đến trái tim\", \"hành trình cảm xúc\", \"mở ra cánh cửa\", \"làn gió mới\", \"bản hòa ca\", \"thổi hồn vào\", \"tỏa sáng rực rỡ\", \"nâng tầm\", \"vượt xa kỳ vọng\", \"kho tàng tri thức\"\n- Triết lý rỗng: \"có thể nói rằng\", \"không thể phủ nhận\", \"có ý nghĩa sâu sắc\", \"như chúng ta đã biết\"\n- Làm màu: \"trong bối cảnh\", \"một cách tổng thể\", \"đáng chú ý là\", \"có thể thấy rằng\", \"thật sự rất\", \"vô cùng quan trọng\", \"mọi giác quan\", \"đắm chìm trong\" (tối đa 1 lần/cảnh)\n- Cấu trúc: \"không phải X... mà là Y\", liệt kê 3 thứ (Rule of Three, tối đa 1 lần/bài), \"từ...đến...\" giả tạo\n- Dự đoán tương lai: \"có lẽ đây sẽ trở thành\", \"rồi thời gian sẽ trả lời\", \"chỉ tương lai mới biết\"\n- Self-labeling: \"điều quan trọng là\", \"khoảnh khắc đặc biệt\", \"đây mới là điều...\"\n- Infomercial hook: \"nhưng khoan đã\", \"điều bất ngờ là\", \"cái hay là\"\n- Narrator bình luận: \"nàng không biết rằng\", \"giá mà nàng biết\", \"số phận đã sắp đặt\"\n\nNGUYÊN TẮC CẤU TRÚC CÂU:\n- KHÔNG viết câu đầy đủ CN-VN liên tục — được phép bỏ chủ ngữ khi đã rõ (tiếng Việt tự nhiên)\n- Câu phải dài ngắn đa dạng: phải có câu <5 chữ (câu đặc biệt/câu cụt) và câu >30 chữ đan xen\n- Đoạn văn phải có độ dài khác nhau: có đoạn 1 câu, có đoạn 5-8 câu\n- Giảm 70% từ nối (thì, là, mà, rằng, và, nhưng, vì thế, do đó, bởi vì) — dùng dấu phẩy hoặc xuống dòng\n- KHÔNG mào đầu trước ý chính — vào thẳng vấn đề\n- KHÔNG kết luận/tổng kết cuối đoạn — kết thúc đột ngột cũng được\n- Tỉ lệ: Hành động 60% - Tả gợi 30% - Cảm xúc 10%. KHÔNG tả quá nhiều\n\nNGUYÊN TẮC HỘI THOẠI:\n- Câu thoại ngắn: 3-7 từ. Một câu là đủ, hai câu là nhiều\n- KHÔNG giải thích trạng thái qua lời thoại. Nếu đau thì rên — đừng nói \"đau quá\"\n- Im lặng là câu trả lời mạnh nhất\n- Xấu hổ = im lặng + câu cụt + hành động. KHÔNG diễn thuyết\n- Trong NSFW: nhân vật nữ TUYỆT ĐỐI KHÔNG nói câu dài giải thích cảm xúc — chỉ rên, thở gấp, hoặc im lặng\n- Không để lời thoại lấn vào phân tích tâm lý — phần đó phải để narrative tả\n\nNGUYÊN TẮC NSFW:\n- Cảm xúc mâu thuẫn phải xuất hiện ĐỒNG THỜI: \"nàng ghét cái cảm giác này — nhưng nàng muốn nó tiếp tục\" — dùng \"nhưng\", \"thế mà\" nối trong cùng một khoảnh khắc\n- Mỗi khoảnh khắc cao trào CHỈ 1-2 giác quan, không tả tất cả\n- Hậu cảnh nóng: KHÔNG gọn gàng, KHÔNG triết lý — giữ cảm xúc thô (shock, shame, khóc, run, im lặng)\n- KHÔNG tả \"bầu không khí\" — tả hành động\n- \"cảm thấy\" → thay bằng hành động: \"nàng sợ\" → \"tay nàng run\"\n- Không \"cả hai đều...\" — chỉ tả một người (ưu tiên nữ)\n\nĐỊNH DẠNG:\n- Viết văn xuôi liền mạch. Cấm heading, bullet, bảng, dấu `---`, chú thích *in nghiêng* trong truyện\n- Không em dash (—) làm dấu mô tả";
+        defaultSkills.push({
+          id: "skill_viet_nhu_nguoi",
+          name: "Viết như người",
+          description: "Loại bỏ toàn bộ dấu hiệu AI trong văn — từ vựng cấm, cấu trúc câu, hội thoại tự nhiên, NSFW pattern.",
+          content: P_SKILL_VIET_NHU_NGUOI,
+          isActive: true
+        });
+        // Add permanent skill: Vũ đạo giao hợp
+        const P_SKILL_VU_DAO = "BẮT BUỘC TUÂN THỦ KHI VIẾT CẢNH GIAO HỢP (THÂM NHẬP):\n\nGIẢI PHẪU MỘT NHỊP NẮC (5 PHA):\nMỗi nhịp nắc hoàn chỉnh có 5 pha. Nhịp chậm đầu cảnh = đủ 5 pha, mỗi pha tối thiểu 1 câu. Nhịp nhanh cuối cảnh = gộp pha:\n1. RÚT RA: từ từ hay nhanh. Dịch kéo theo, thành trong bám níu. Biến thể: rút nhanh (bắn nước) / rút chậm (kéo dài) / rút nửa rồi vào lại\n2. TREO: quy đầu ở ngay cửa, chưa vào. Hơi nóng tỏa. Mẹ tưởng sắp dừng. Biến thể: treo lâu / treo rồi cọ môi hoa / treo rồi xoay\n3. ĐẨY VÀO: từng milimet. Độ khít, độ trơn. Biến thể: vào thẳng / vào nghiêng / vào nông / vào một hơi lút cán\n4. LÚT CÁN: háng va mông, tiếng bẹp. Vú nảy. Biến thể: lút mạnh (bụp) / lút nhẹ / lút rồi xoay hông\n5. GIỮ: khoảng dừng, bên trong co thắt. Cảm nhận từng đường gân đập. Biến thể: giữ sâu + thì thầm / giữ + day hột le / giữ rồi nhấp nhô nhẹ\n\n12 KỸ THUẬT CHỐNG LẶP (mỗi đợt sau khác đợt trước ít nhất 3 yếu tố):\n1. Đổi góc hông (xoay 15°, nghiêng, từ dưới lên, vẽ vòng tròn)\n2. Đổi độ sâu (nông → nửa → lút cán → cọ cửa rồi đâm sâu)\n3. Đổi tốc độ (chậm → nhịp đôi → dồn dập → ngắt quãng 3 nhanh 1 chậm)\n4. Đổi điểm nhấn (cọ thành trước, đâm cổ tử cung, ma sát môi hoa, ép hột le)\n5. Đổi tay (bóp vú → bấu mông → nắm tóc → ghì vai → luồn xuống bụng → nắm tay mẹ giữ chặt)\n6. Đổi chân mẹ (kẹp eo, vắt vai, duỗi thẳng, co gối, banh rộng, giơ lên trời)\n7. Đổi âm thanh (nước → thịt → rên → giường kẽo kẹt → vải → im lặng)\n8. Đổi phản ứng mẹ (nghiến răng → cắn môi → quay mặt → nước mắt → run → rên vỡ → nấc → gào nghẹn)\n9. Đổi lời thoại (con thì thầm → mẹ mắng yếu → con xin lỗi → im lặng → mẹ gọi tên chồng)\n10. Đổi môi trường (đèn hắt, mưa, điện thoại reo, tiếng bước chân, gió lùa rèm)\n11. Đổi tiết tấu câu: dài chậm (nhịp chậm) → câu cụt (nhịp nhanh) → một từ một dòng (đỉnh điểm)\n12. Đổi giác quan: xúc giác → thính giác → thị giác → khứu giác\n\nCHUYỂN TƯ THẾ (tối thiểu 150 chữ, 4 bước):\n1. Rút ra (tiếng tách, dịch chảy theo, thành trong co thắt níu)\n2. Di chuyển (tay giữ hông/eo, kéo hoặc nhấc mẹ, da trượt trên da ướt mồ hôi)\n3. Xoay/định vị (mẹ bị xoay, mặt úp gối hoặc lưng dựa ngực con)\n4. Vào lại (KHÔNG đâm thẳng — thăm dò: cọ môi hoa, trượt khe, chờ một nhịp rồi mới đẩy)\n\nĐAN XEN HÀNH ĐỘNG: Lúc nào cũng có ít nhất 2 điểm chạm song song (hông + tay, hoặc hông + miệng). Mỗi 5-10 nhịp đổi 1 điểm chạm phụ. Nắc + mẹ vùng vẫy = góc vào lệch → chống lặp miễn phí.\n\nCHUỖI PHẢN ỨNG DÂY CHUYỀN: Vú nảy → mẹ thấy thân mình bị nắc → nhục, cắn môi → tiếng rên thoát kẽ răng → con nghe → nắc nhanh hơn → vú nảy mạnh hơn → mẹ gồng bụng → co thắt siết → con rên khàn → mẹ nước mắt trào...\n\nBẢNG TỪ CHỐNG LẶP: đẩy vào (trượt/vào/lách/ấn → đâm/thọc/nhồi → cắm/xuyên/nện). rút ra (lùi/tuột → kéo/giật/trồi → bứt/rút phắt). nắc (nhấp/đưa đẩy → thúc/ra vào → đóng cọc/dập/điên cuồng). Không dùng từ cấp mạnh ở đầu cảnh.\n\nĐỊNH LƯỢNG: Cảnh giao hợp chính 3000-5000 chữ. Thăm dò 15%, nhịp chậm 20%, leo thang 25%, chùng+chuyển tư thế 15%, đợt 2 cao hơn 25%.";
+        defaultSkills.push({
+          id: "skill_vu_dao",
+          name: "Vũ đạo giao hợp",
+          description: "Biên đạo từng động tác — giải phẫu một nhịp nắc, 12 kỹ thuật chống lặp, chuyển tư thế, chuỗi phản ứng dây chuyền.",
+          content: P_SKILL_VU_DAO,
+          isActive: true
+        });
+        // Add permanent skill: Cảnh nóng cực dâm
+        const P_SKILL_CUC_DAM = "BẮT BUỘC TUÂN THỦ KHI VIẾT CẢNH NÓNG — MỤC TIÊU: DÂM DỤC TỘT ĐỘ\n\nCHẾ ĐỘ: Xác định CƯỠNG ÉP (A) hay ĐỒNG THUẬN (B). Một cảnh CHỈ dùng MỘT chế độ.\nA: kháng cự, căm ghét, nhục nhã. Cơ thể phản bội. Nghiến răng, cắn môi, quay mặt, khóc. Kết thúc: hổ thẹn, im lặng.\nB: muốn, đón nhận, chủ động hoặc bị động nhưng đồng ý. Thở gấp vì sướng. Kết thúc: thỏa mãn, âu yếm.\n\nQUY TẮC CHUNG: Mọi nhân vật nữ (mẹ, cô, bác, dì, chị, vợ, người yêu...). Tả dấu hiệu cơ thể — KHÔNG kể cảm xúc. Mỗi hành động → một phản ứng cơ thể. Mỗi đoạn ít nhất 2 giác quan.\n\n5 GIAI ĐOẠN CỰC KHOÁI (mỗi giai đoạn 300-500 CHỮ):\n\nGĐ1 — BÁO HIỆU:\nDa đỏ ửng từ cổ xuống ngực xuống bụng — hồng đậm loang dần. Hơi thở gấp dần. Cơ bụng co thắt nhẹ. Mắt mờ, đồng tử giãn. Đầu vú căng cứng. Dâm thủy rỉ.\nA thêm: nghiến răng, cắn môi đến rách, cắn mu bàn tay.\nB thêm: mắt lim dim, môi hé mở, tay kéo đối phương lại gần.\n\nGĐ2 — DÂNG TRÀO:\nToàn thân run từ đùi → bụng → ngực → vai. Tử cung co thắt: bóp chặt, nới, bóp chặt, nới. Lưng cong, ngực ưỡn, hông đẩy. Tiếng rên thoát ra không kìm được. Nước mắt ứa. Đầu vú đỏ au.\n\nGĐ3 — BÙNG NỔ (DÀI NHẤT):\nToàn thân: Lưng cong tối đa rời giường, cổ ngửa, yết hầu nhô. Miệng há, lưỡi thè ra dài ngoằng ướt bóng run rẩy. Mắt trợn ngược chỉ còn lòng trắng đỏ ngầu. Nước dãi ấm đặc chảy dọc cằm kéo sợi nhỏ giọt xuống ngực. Hàm dưới trễ, không ngậm được. Bụng gồng cứng, rốn co rút mím chặt. Mười ngón chân quặp — duỗi cứng — quặp. Tay cào cấu lung tung.\nÂm thanh: A — rú dài lạc giọng. B — thét sung sướng gọi tên.\nBên trong: tử cung co thắt dữ dội, dâm thủy ồ ạt nóng hổi phun ra thành dòng ướt đẫm. Bọt trắng. Hơi nóng tỏa.\n\nGĐ4 — DƯ CHẤN:\nMềm nhũn, nặng trịch, không sức. Chân tay run nhẹ không dứt. Tử cung thắt thưa dần. Hơi thở trở lại từng hơi dài. Dâm thủy rỉ từng giọt.\n\nGĐ5 — SAU CÙNG:\nA: lắc đầu, đỏ mặt xấu hổ, quay đi, nước mắt lặng lẽ, im lặng, muốn tắm.\nB: thở dài thỏa mãn, rúc vào, tay quấn, chân quấn, \"tuyệt quá...\", \"làm em muốn chết...\"\n\nKHẨU DÂM THEO CHẾ ĐỘ:\nA (nam thì thầm van nỉ): \"Em ướt quá...\", \"Cô nghe tiếng nước không...\", \"Chị siết em này...\", \"Nhìn nước chảy ướt hết tay em này...\"\nNữ đáp: nghiến răng, \"im đi\", \"đừng nói\", lắc đầu, nấc.\nB (nam): \"Em thích không?\", \"Nơi này... hay nơi này?\", \"Nhìn anh đi...\", \"Em đẹp quá...\"\nNữ đáp: \"thích...\", \"nữa đi...\", \"anh ơi...\", \"chỗ đó...\" gọi tên khi lên đỉnh.\n\nÂM THANH DÂM DỤC:\nThịt: phòm, bốp, chụt, bẹp, phụt — thay đổi liên tục.\nNước: sùng sục, chít, tách, rỏ giọt.\nNgười A: rên → nấc → rú → khóc → im lặng.\nNgười B: rên → thở gấp → gọi tên → thét → thở dài.\n\nXƯNG HÔ THEO NHÂN VẬT: mẹ-con / cô-cháu / chị-em / sếp-em / vợ-chồng / người yêu.\n\nĐỊNH LƯỢNG: Cảnh tối thiểu 4000 chữ. Cảnh lên đỉnh riêng tối thiểu 1500 chữ.\nCẤM: tóm tắt, nhảy cóc, lặp từ.";
+        defaultSkills.push({
+          id: "skill_cuc_dam",
+          name: "Cảnh nóng cực dâm",
+          description: "Tạo sự dâm dục tột độ — 2 chế độ cưỡng ép/đồng thuận, 5 giai đoạn cực khoái, mất kiểm soát từng bộ phận, âm thanh dâm dục, khẩu dâm theo nhân vật.",
+          content: P_SKILL_CUC_DAM,
+          isActive: true
+        });
         setWritingSkills(defaultSkills);
         safeSetItem("writingSkills", JSON.stringify(defaultSkills));
       }
@@ -756,9 +828,12 @@ export default function StoryEditor() {
   }, [plotMap, isLoaded]);
 
   const getActiveSkillsPrompt = () => {
+    // Phóng đại miêu tả skill is ALWAYS active (permanent, cannot be disabled)
+    const permanentIds = ["skill_phong_dai", "skill_phan_boi", "skill_tuong_phan", "skill_vi_mo", "skill_viet_nhu_nguoi", "skill_vu_dao", "skill_cuc_dam"];
+    
     return writingSkills
-      .filter(s => s.isActive)
-      .map(s => `[KỸ NĂNG: ${s.name}]\n- Mục tiêu: ${s.description}\n- Hướng dẫn thực hiện: ${s.content}`)
+      .filter(s => s.isActive || permanentIds.includes(s.id))
+      .map(s => `[KỸ NĂNG: ${s.name}]${permanentIds.includes(s.id) && !s.isActive ? " [VĨNH VIỄN - KHÔNG THỂ TẮT]" : ""}\n- Mục tiêu: ${s.description}\n- Hướng dẫn thực hiện: ${s.content}`)
       .join("\n\n");
   };
 
@@ -1263,7 +1338,7 @@ export default function StoryEditor() {
       title: "Xóa toàn bộ truyện",
       message: "Bạn có chắc chắn muốn XÓA TOÀN BỘ truyện (tất cả quyển và chương)? Hành động này không thể hoàn tác.",
       onConfirm: () => {
-        const initialVolumes = [{ id: "v1", title: "Quyển 1", chapters: [{ id: "c1", title: "Chương 1", content: "", summary: "" }] }];
+        const initialVolumes = [{ id: "v1", title: "Quyển 1", chapters: [{ id: "c1", title: "Chương 1", content: "" }] }];
         setVolumes(initialVolumes);
         setActiveVolumeId("v1");
         setActiveChapterId("c1");
@@ -1436,39 +1511,12 @@ export default function StoryEditor() {
       {
         id: newVolumeId,
         title: `Quyển ${prev.length + 1}`,
-        chapters: [{ id: newChapterId, title: "Chương 1", content: "", summary: "" }]
+        chapters: [{ id: newChapterId, title: "Chương 1", content: "" }]
       }
     ]);
     setExpandedVolumes(prev => [...prev, newVolumeId]);
     setActiveVolumeId(newVolumeId);
     setActiveChapterId(newChapterId);
-  };
-
-  const [summarizing, setSummarizing] = useState(false);
-  const generateSummary = async () => {
-    const chapter = getActiveChapter();
-    if (!chapter || !chapter.content.trim() || summarizing) return;
-    setSummarizing(true);
-    try {
-      const prompt = `Tóm tắt chương truyện sau trong KHOẢNG 200-300 CHỮ, ngắn gọn nhưng ĐỦ Ý. Yêu cầu:\n- Chỉ nêu sự kiện chính, không tả chi tiết\n- Giữ tên nhân vật\n- Viết liền mạch, không gạch đầu dòng\n\nNội dung:\n${chapter.content}\n\nTóm tắt:`;
-      const res = await safeGenerateContent({ model: "gemini-3.1-flash-lite-preview", contents: prompt });
-      const summary = res.text || "";
-      if (summary) {
-        setVolumes(prev => prev.map(v => {
-          if (v.id === activeVolumeId) {
-            return {
-              ...v,
-              chapters: v.chapters.map(c => c.id === activeChapterId ? { ...c, summary } : c)
-            };
-          }
-          return v;
-        }));
-      }
-    } catch (e: any) {
-      console.error("Failed to summarize:", e);
-    } finally {
-      setSummarizing(false);
-    }
   };
 
   const addChapter = (volumeId: string) => {
@@ -1477,7 +1525,7 @@ export default function StoryEditor() {
       if (v.id === volumeId) {
         return {
           ...v,
-          chapters: [...v.chapters, { id: newChapterId, title: `Chương ${v.chapters.length + 1}`, content: "", summary: "" }]
+          chapters: [...v.chapters, { id: newChapterId, title: `Chương ${v.chapters.length + 1}`, content: "" }]
         };
       }
       return v;
@@ -1915,6 +1963,13 @@ export default function StoryEditor() {
                 >
                   <Type size={14} className="sm:w-4 sm:h-4" />
                   <span className="whitespace-nowrap">Bắt chước</span>
+                </button>
+                <button 
+                  onClick={() => setActiveSettingsTab("apikeys")}
+                  className={`flex-1 px-3 sm:px-4 py-2 text-[10px] sm:text-sm font-bold rounded-lg flex items-center justify-center gap-1.5 sm:gap-2 transition-all ${activeSettingsTab === "apikeys" ? "bg-white text-indigo-600 shadow-sm" : "text-stone-500 hover:text-stone-700"}`}
+                >
+                  <KeyRound size={14} className="sm:w-4 sm:h-4" />
+                  <span className="whitespace-nowrap">AI Keys</span>
                 </button>
               </div>
             </div>
@@ -2798,6 +2853,87 @@ export default function StoryEditor() {
                   </div>
                 </div>
               )}
+
+              {activeSettingsTab === "apikeys" && (
+                <div className="space-y-6">
+                  <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-xl text-sm text-indigo-800 leading-relaxed">
+                    <div className="flex items-center gap-2 mb-2">
+                      <KeyRound size={18} className="text-indigo-600" />
+                      <strong className="text-indigo-900">Kho key Gemini — tự động xoay vòng</strong>
+                    </div>
+                    <p className="mb-2">
+                      Dán <strong>nhiều key Gemini miễn phí</strong> vào ô bên dưới, mỗi key một dòng. Khi key đang dùng hết lượt trong ngày, StoryCraft sẽ <strong>tự động chuyển sang key kế tiếp</strong>. Khi toàn bộ key hết lượt → tự chuyển sang DeepSeek.
+                    </p>
+                    <p className="mb-2">
+                      ⚠️ Mỗi key phải tạo từ <strong>1 tài khoản Google khác nhau</strong> (hạn mức free tính theo tài khoản — 2 key cùng 1 tài khoản thì chung 1 hạn mức, xoay cũng vô ích).
+                    </p>
+                    <p>
+                      Trạng thái "hết lượt" tự reset mỗi ngày theo giờ Mỹ (Pacific). Key Gemini thường bắt đầu bằng <code className="bg-indigo-100 px-1 rounded">AIza...</code> (tạo từ AI Studio) hoặc <code className="bg-indigo-100 px-1 rounded">AQ...</code> (tạo từ Google Cloud Console).
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2 flex items-center gap-2">
+                      <KeyRound size={14} className="text-indigo-500" />
+                      Danh sách key Gemini (mỗi dòng 1 key)
+                    </label>
+                    <textarea
+                      value={keyPoolRaw}
+                      onChange={(e) => setKeyPoolRaw(e.target.value)}
+                      placeholder={"AIzaSy...\nAIzaSy...\nAIzaSy..."}
+                      className="w-full h-36 p-4 rounded-xl border border-stone-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-mono text-xs text-stone-700 leading-relaxed"
+                    />
+                  </div>
+
+                  <div className="p-4 bg-stone-50 rounded-2xl border border-stone-100">
+                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-3">Trạng thái kho key hôm nay</label>
+                    {keyPoolStatus.total === 0 ? (
+                      <p className="text-sm text-stone-500">Chưa có key nào trong kho. Nếu app vẫn viết được thì đang dùng key cấu hình sẵn từ máy chủ (không xoay vòng được).</p>
+                    ) : (
+                      <div className="space-y-2">
+                        <p className="text-sm text-stone-700">
+                          Tổng: <strong>{keyPoolStatus.total}</strong> key · Còn lượt hôm nay: <strong>{keyPoolStatus.active}</strong> key
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {keyPoolStatus.keys.map((k, i) => (
+                            <span
+                              key={i}
+                              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
+                                k.exhausted
+                                  ? "bg-rose-100 text-rose-700"
+                                  : "bg-emerald-100 text-emerald-700"
+                              }`}
+                            >
+                              <span className={`w-1.5 h-1.5 rounded-full ${k.exhausted ? "bg-rose-500" : "bg-emerald-500"}`} />
+                              {k.label} {k.exhausted ? "· hết lượt" : "· còn lượt"}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-2 flex flex-wrap gap-3">
+                    <button
+                      onClick={handleSaveKeyPool}
+                      className="flex items-center gap-2 px-6 py-2 bg-stone-900 text-white rounded-xl text-sm font-bold hover:bg-stone-800 transition-all shadow-lg active:scale-95"
+                    >
+                      {keyPoolSaved ? <CheckCircle2 size={16} /> : <Save size={16} />}
+                      {keyPoolSaved ? "Đã lưu" : "Lưu kho key"}
+                    </button>
+                    <button
+                      onClick={() => {
+                        clearGeminiKeyExhausted();
+                        refreshKeyPoolStatus();
+                      }}
+                      className="flex items-center gap-2 px-4 py-2 bg-white text-stone-600 border border-stone-200 rounded-xl text-sm font-bold hover:bg-stone-50 transition-all"
+                    >
+                      <RotateCcw size={14} />
+                      Đặt lại trạng thái hết lượt
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="p-6 bg-stone-50 border-t border-stone-100 flex justify-end">
@@ -3122,33 +3258,6 @@ export default function StoryEditor() {
               }`}
               placeholder="Tên chương..."
             />
-            {/* Chapter Summary */}
-            <div className="mb-4 sm:mb-6">
-              {activeChapter.summary ? (
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 sm:p-4">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-bold text-amber-700 uppercase tracking-wide">Tóm tắt chương</span>
-                    <button
-                      onClick={generateSummary}
-                      disabled={summarizing}
-                      className="text-xs text-amber-600 hover:text-amber-800 font-medium disabled:opacity-50"
-                    >
-                      {summarizing ? "Đang tóm tắt..." : "Làm mới"}
-                    </button>
-                  </div>
-                  <p className="text-sm text-amber-900 leading-relaxed">{activeChapter.summary}</p>
-                </div>
-              ) : (
-                <button
-                  onClick={generateSummary}
-                  disabled={summarizing || !activeChapter.content.trim()}
-                  className="flex items-center gap-1.5 text-xs font-medium text-amber-600 hover:text-amber-800 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  <Sparkles size={14} />
-                  {summarizing ? "Đang tóm tắt..." : "Tóm tắt chương bằng AI"}
-                </button>
-              )}
-            </div>
             <textarea
               ref={textareaRef}
               value={localContent}
