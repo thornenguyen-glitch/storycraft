@@ -1,123 +1,19 @@
-import { GoogleGenAI, HarmCategory, HarmBlockThreshold } from "@google/genai";
 import OpenAI from "openai";
 
 // ============================================================
-// DUAL PROVIDER SETUP: Gemini (primary) + DeepSeek (fallback)
+// DEEPSEEK ONLY: StoryCraft chỉ dùng DeepSeek (không còn Gemini)
 // ============================================================
 
 let deepseekClient: OpenAI | null = null;
 
-// ============================================================
-// GEMINI KEY POOL: nhiều key free, tự động xoay vòng khi hết lượt
-// - Dán nhiều key vào Cài đặt → AI Keys (mỗi dòng 1 key)
-// - Key nào hết hạn mức trong ngày → đánh dấu, tự chuyển key kế tiếp
-// - Hết sạch key → fallback DeepSeek
-// - Trạng thái "hết lượt" tự reset mỗi ngày theo giờ Mỹ (Pacific)
-// ============================================================
-const KEY_POOL_STORAGE = "storycraft_gemini_key_pool";
-const EXHAUSTED_STORAGE = "storycraft_gemini_exhausted";
-
-const geminiClients: Record<string, GoogleGenAI> = {};
-
-function getLosAngelesDate(): string {
-  try {
-    return new Intl.DateTimeFormat("en-CA", {
-      timeZone: "America/Los_Angeles",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(new Date());
-  } catch {
-    return new Date().toISOString().slice(0, 10);
-  }
-}
-
-function parseKeyList(raw: string): string[] {
-  return [...new Set(
-    raw
-      .split(/[\n,;]/)
-      .map((k) => k.trim())
-      .filter((k) => (k.startsWith("AIza") || k.startsWith("AQ.")) && k.length >= 30)
-  )];
-}
-
-export function saveGeminiKeyPool(raw: string) {
-  try {
-    localStorage.setItem(KEY_POOL_STORAGE, parseKeyList(raw).join("\n"));
-  } catch (e) {
-    console.warn("Không lưu được kho key Gemini", e);
-  }
-}
-
-export function getGeminiKeyPool(): string[] {
-  try {
-    const raw = localStorage.getItem(KEY_POOL_STORAGE);
-    if (raw) {
-      const keys = parseKeyList(raw);
-      if (keys.length > 0) return keys;
-    }
-  } catch (e) {
-    console.warn("Không đọc được kho key Gemini", e);
-  }
-  // Key nhúng sẵn từ máy chủ (nhiều key, phân cách bằng dấu phẩy)
-  const envKeys = parseKeyList(((process.env as any).GEMINI_API_KEYS as string) || "");
-  if (envKeys.length > 0) return envKeys;
-  const envKey = ((process.env as any).GEMINI_API_KEY as string) || "";
-  return envKey ? [envKey] : [];
-}
-
-function getExhaustedMap(): Record<string, string> {
-  try {
-    return JSON.parse(localStorage.getItem(EXHAUSTED_STORAGE) || "{}");
-  } catch {
-    return {};
-  }
-}
-
-function markKeyExhausted(key: string) {
-  try {
-    const map = getExhaustedMap();
-    map[key] = getLosAngelesDate();
-    localStorage.setItem(EXHAUSTED_STORAGE, JSON.stringify(map));
-  } catch (e) {
-    console.warn("Không lưu được trạng thái key", e);
-  }
-}
-
-function isKeyExhaustedToday(key: string): boolean {
-  try {
-    return getExhaustedMap()[key] === getLosAngelesDate();
-  } catch {
-    return false;
-  }
-}
-
-export function clearGeminiKeyExhausted() {
-  try {
-    localStorage.removeItem(EXHAUSTED_STORAGE);
-  } catch (e) {
-    console.warn("Không xóa được trạng thái key", e);
-  }
-}
-
-export function getGeminiKeyPoolStatus(): { total: number; active: number; keys: { label: string; exhausted: boolean }[] } {
-  const keys = getGeminiKeyPool();
-  return {
-    total: keys.length,
-    active: keys.filter((k) => !isKeyExhaustedToday(k)).length,
-    keys: keys.map((k) => ({
-      label: k.slice(0, 10) + "…" + k.slice(-4),
-      exhausted: isKeyExhaustedToday(k),
-    })),
-  };
-}
-
-function getGeminiClient(apiKey: string): GoogleGenAI {
-  if (!geminiClients[apiKey]) {
-    geminiClients[apiKey] = new GoogleGenAI({ apiKey });
-  }
-  return geminiClients[apiKey];
-}
+// Map Gemini model names -> DeepSeek models (giữ tương thích với các lời gọi cũ)
+const GEMINI_TO_DEEPSEEK_MODEL: Record<string, string> = {
+  "gemini-3.1-pro-preview": "deepseek-v4-pro",
+  "gemini-3.1-flash-lite-preview": "deepseek-v4-pro",
+  "gemini-3-flash-preview": "deepseek-v4-pro",
+  "gemini-2.5-flash-image": "deepseek-v4-pro",
+  "gemini-2.0-flash": "deepseek-v4-pro",
+};
 
 function getDeepSeekAI(): OpenAI | null {
   if (!deepseekClient && (process.env as any).DEEPSEEK_API_KEY) {
@@ -134,40 +30,19 @@ function getDeepSeekAI(): OpenAI | null {
   return deepseekClient;
 }
 
-// Map Gemini model names to DeepSeek models
-// NOTE: v4-pro -> v4-flash (2026-08-07): tiết kiệm ~70% chi phí, chất lượng văn chương tương đương.
-// Pro vẫn có thể dùng lại bằng cách đổi dòng dưới thành "deepseek-v4-pro".
-const GEMINI_TO_DEEPSEEK_MODEL: Record<string, string> = {
-  "gemini-3.1-pro-preview": "deepseek-v4-flash",
-  "gemini-3.1-flash-lite-preview": "deepseek-v4-flash",
-  "gemini-3-flash-preview": "deepseek-v4-flash",
-  "gemini-2.5-flash-image": "deepseek-v4-flash",
-  "gemini-2.0-flash": "deepseek-v4-flash",
-};
+// Các hàm key pool cũ được giữ lại dưới dạng rỗng (tương thích, không còn Gemini)
+export function saveGeminiKeyPool(raw: string) {}
+export function getGeminiKeyPool(): string[] { return []; }
+export function clearGeminiKeyExhausted() {}
+export function getGeminiKeyPoolStatus(): { total: number; active: number; keys: { label: string; exhausted: boolean }[] } {
+  return { total: 0, active: 0, keys: [] };
+}
 
-// Check if request is for image generation (Gemini-only)
+// Check if request is for image generation (trước đây Gemini-only)
 function isImageRequest(params: any): boolean {
   return params.model?.includes("image") || 
          params.config?.imageConfig != null ||
          (typeof params.contents === "object" && params.contents?.parts?.some((p: any) => p.inlineData?.mimeType?.startsWith("image/")));
-}
-
-// Call Gemini API (với key cụ thể trong kho)
-async function callGeminiGenerate(params: any, apiKey: string): Promise<string> {
-  const ai = getGeminiClient(apiKey);
-  
-  // Relax safety settings for NSFW content
-  const safeParams = { ...params };
-  if (!safeParams.config) safeParams.config = {};
-  safeParams.config.safetySettings = [
-    { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
-    { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
-    { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
-    { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
-  ];
-
-  const response = await ai.models.generateContent(safeParams);
-  return response.text;
 }
 
 // Detect if request contains NSFW content
@@ -295,93 +170,38 @@ function isQuotaError(error: any): boolean {
          msg.includes("limit: 0");
 }
 
-// Unified safe generate content: xoay vòng key Gemini → fallback DeepSeek
+// Unified safe generate content: chỉ dùng DeepSeek
 async function safeGenerateContent(params: any, retryCount = 0): Promise<any> {
-  const geminiKeys = getGeminiKeyPool();
   const hasDeepSeek = !!getDeepSeekAI();
   const isImage = isImageRequest(params);
 
-  // ---- Gemini: thử lần lượt từng key (tự động xoay vòng khi hết lượt) ----
-  let geminiQuotaExhausted = false;
-  let lastGeminiError: any = null;
-
-  if (geminiKeys.length > 0) {
-    const usableKeys = geminiKeys.filter((k) => !isKeyExhaustedToday(k));
-
-    if (usableKeys.length === 0) {
-      geminiQuotaExhausted = true;
-      console.warn("Tất cả key Gemini đã hết lượt hôm nay");
-    } else {
-      for (const key of usableKeys) {
-        try {
-          const text = await callGeminiGenerate(params, key);
-          return { text };
-        } catch (error: any) {
-          const errorMessage = error.message || String(error);
-          console.warn(`Gemini key ${key.slice(0, 8)}… thất bại: ${errorMessage.substring(0, 120)}`);
-
-          if (isDailyQuotaError(error)) {
-            // Hết hạn mức trong ngày → đánh dấu key hết lượt, chuyển key kế tiếp
-            markKeyExhausted(key);
-            geminiQuotaExhausted = true;
-            continue;
-          }
-          if (isQuotaError(error)) {
-            // Rate limit tạm thời (per-minute) → chờ 3 giây rồi thử key kế tiếp
-            geminiQuotaExhausted = true;
-            await new Promise((resolve) => setTimeout(resolve, 3000));
-            continue;
-          }
-          // Lỗi khác (mạng, safety…) → lưu lỗi, thử key kế tiếp
-          lastGeminiError = error;
-        }
-      }
-    }
-  }
-
-  // ---- Fallback DeepSeek (không áp dụng cho tạo ảnh) ----
-  if (hasDeepSeek && !isImage) {
-    try {
-      const text = await callDeepSeekGenerate(params);
-      return { text };
-    } catch (error: any) {
-      const errorMessage = error.message || String(error);
-      console.warn(`DeepSeek fallback failed: ${errorMessage.substring(0, 100)}`);
-
-      if (isQuotaError(error)) {
-        throw new Error("Quota exceeded. Cả Gemini và DeepSeek đều hết lượt dùng. Vui lòng thử lại vào ngày mai.");
-      }
-
-      if (retryCount < 2) {
-        const waitTime = Math.pow(2, retryCount) * 1000 + Math.random() * 1000;
-        await new Promise(resolve => setTimeout(resolve, waitTime));
-        return safeGenerateContent(params, retryCount + 1);
-      }
-
-      throw new Error(`Lỗi AI: ${errorMessage}. Hệ thống đã cố gắng tự động khắc phục nhưng không thành công.`);
-    }
-  }
-
-  // ---- Hết cách ----
   if (isImage) {
-    if (geminiQuotaExhausted) {
-      throw new Error("Tất cả key Gemini đã hết lượt hôm nay. Vui lòng thử lại vào ngày mai.");
+    throw new Error("Không thể tạo ảnh: StoryCraft hiện chỉ hỗ trợ DeepSeek (không tạo ảnh được). Vui lòng tạo ảnh bằng công cụ khác.");
+  }
+
+  if (!hasDeepSeek) {
+    throw new Error("Không có AI provider nào hoạt động. Vui lòng cấu hình DEEPSEEK_API_KEY.");
+  }
+
+  try {
+    const text = await callDeepSeekGenerate(params);
+    return { text };
+  } catch (error: any) {
+    const errorMessage = error.message || String(error);
+    console.warn(`DeepSeek failed: ${errorMessage.substring(0, 100)}`);
+
+    if (isQuotaError(error)) {
+      throw new Error("Quota exceeded. DeepSeek đã hết lượt dùng. Vui lòng thử lại sau.");
     }
-    if (!geminiKeys.length) {
-      throw new Error("Không thể tạo ảnh: chưa có Gemini API key. Hãy dán key vào Cài đặt → AI Keys.");
+
+    if (retryCount < 2) {
+      const waitTime = Math.pow(2, retryCount) * 1000 + Math.random() * 1000;
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+      return safeGenerateContent(params, retryCount + 1);
     }
-    throw new Error(`Không thể tạo ảnh: ${(lastGeminiError && (lastGeminiError.message || String(lastGeminiError))) || "Lỗi không xác định."}`);
-  }
 
-  if (geminiQuotaExhausted) {
-    throw new Error("Đã hết lượt Gemini hôm nay (toàn bộ key trong kho). Hệ thống đã chuyển sang DeepSeek nhưng DeepSeek cũng không hoạt động. Vui lòng thử lại sau.");
+    throw new Error(`Lỗi AI: ${errorMessage}. Hệ thống đã cố gắng tự động khắc phục nhưng không thành công.`);
   }
-
-  if (!geminiKeys.length && !hasDeepSeek) {
-    throw new Error("Không có AI provider nào hoạt động. Vui lòng dán key Gemini vào Cài đặt → AI Keys hoặc cấu hình DEEPSEEK_API_KEY.");
-  }
-
-  throw new Error(`Lỗi AI: ${(lastGeminiError && (lastGeminiError.message || String(lastGeminiError))) || "Không rõ nguyên nhân."}`);
 }
 
 // ============================================================
@@ -660,47 +480,7 @@ YÊU CẦU:
 }
 
 export async function generateStoryImage(prompt: string) {
-  // Translate prompt to English for better image generation results
-  let englishPrompt = prompt;
-  try {
-    const translationResponse = await safeGenerateContent({
-      model: "gemini-3-flash-preview",
-      contents: `Translate the following Vietnamese image description into a detailed English prompt for an AI image generator. Focus on artistic style, lighting, and composition. Only return the English translation, nothing else.\n\nDescription: ${prompt}`,
-      config: {
-        temperature: 0.3,
-      }
-    });
-    if (translationResponse.text) {
-      englishPrompt = translationResponse.text.trim();
-    }
-  } catch (e) {
-    console.warn("Failed to translate prompt for image generation, using original.", e);
-  }
-
-  try {
-    const response = await safeGenerateContent({
-      model: "gemini-2.5-flash-image",
-      contents: {
-        parts: [
-          {
-            text: `A high-quality digital illustration: ${englishPrompt}`,
-          },
-        ],
-      },
-      config: {
-        imageConfig: {
-          aspectRatio: "16:9",
-        },
-      },
-    });
-
-    // For Gemini image generation, the response includes candidates with inlineData
-    // When DeepSeek handles this (text-only), it will just return text
-    return response.text || "Không thể tạo ảnh.";
-  } catch (error: any) {
-    console.error("Image generation error:", error);
-    throw error;
-  }
+  throw new Error("Không thể tạo ảnh: StoryCraft hiện chỉ hỗ trợ DeepSeek (không tạo ảnh được). Vui lòng tạo ảnh bằng công cụ khác.");
 }
 
 export async function analyzeWritingStyle(text: string) {

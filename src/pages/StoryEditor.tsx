@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import localforage from "localforage";
 import { Link } from "react-router-dom";
-import { continueStory, rewriteStory, fixStoryErrors, scanStoryErrors, suggestCharacterNames, suggestAppearance, generatePlotMap, scanFullStoryConsistency, analyzeWritingStyle, getGeminiKeyPool, saveGeminiKeyPool, getGeminiKeyPoolStatus, clearGeminiKeyExhausted } from "../services/ai";
+import { continueStory, rewriteStory, fixStoryErrors, scanStoryErrors, suggestCharacterNames, suggestAppearance, generatePlotMap, scanFullStoryConsistency, analyzeWritingStyle,  } from "../services/ai";
 import { Loader2, PenTool, Sparkles, Wand2, Copy, CheckCircle2, Trash2, Download, ArrowLeft, ArrowRight, Image as ImageIcon, Plus, ChevronDown, ChevronRight, Book, FileText, RefreshCw, Menu, PanelLeftClose, PanelLeftOpen, Settings, Save, Brain, X, RotateCcw, Shield, User, Globe, Share2, Facebook, Twitter, MessageCircle, Maximize2, Minimize2, Lightbulb, Users, Database, Upload, Flame, Map, Search, LogIn, LogOut, FileQuestion, Type, KeyRound } from "lucide-react";
 import { safeSetItem, safeGetItem, getStorageUsage } from "../utils/storage";
 import { useAuth } from "../contexts/AuthContext";
@@ -351,28 +351,9 @@ export default function StoryEditor() {
   const [storyMemory, setStoryMemory] = useState("");
   const [isMemoryOpen, setIsMemoryOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const [activeSettingsTab, setActiveSettingsTab] = useState<"genre" | "world" | "character" | "supporting" | "rules" | "plot" | "reference" | "mimic" | "skills" | "apikeys">("genre");
+  const [activeSettingsTab, setActiveSettingsTab] = useState<"genre" | "world" | "character" | "supporting" | "rules" | "plot" | "reference" | "mimic" | "skills">("genre");
   const [writingSkills, setWritingSkills] = useState<WritingSkill[]>([]);
-  const [keyPoolRaw, setKeyPoolRaw] = useState("");
-  const [keyPoolSaved, setKeyPoolSaved] = useState(false);
-  const [keyPoolStatus, setKeyPoolStatus] = useState<{ total: number; active: number; keys: { label: string; exhausted: boolean }[] }>({ total: 0, active: 0, keys: [] });
 
-  const refreshKeyPoolStatus = () => {
-    setKeyPoolStatus(getGeminiKeyPoolStatus());
-  };
-
-  const handleSaveKeyPool = () => {
-    saveGeminiKeyPool(keyPoolRaw);
-    setKeyPoolSaved(true);
-    setTimeout(() => setKeyPoolSaved(false), 2000);
-    refreshKeyPoolStatus();
-  };
-
-  useEffect(() => {
-    setKeyPoolRaw(getGeminiKeyPool().join("\n"));
-    refreshKeyPoolStatus();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
   const [worldSettings, setWorldSettings] = useState<any>({});
   const [characterSettings, setCharacterSettings] = useState<any>({});
   const [supportingCharacters, setSupportingCharacters] = useState<any[]>([]);
@@ -1964,13 +1945,6 @@ export default function StoryEditor() {
                   <Type size={14} className="sm:w-4 sm:h-4" />
                   <span className="whitespace-nowrap">Bắt chước</span>
                 </button>
-                <button 
-                  onClick={() => setActiveSettingsTab("apikeys")}
-                  className={`flex-1 px-3 sm:px-4 py-2 text-[10px] sm:text-sm font-bold rounded-lg flex items-center justify-center gap-1.5 sm:gap-2 transition-all ${activeSettingsTab === "apikeys" ? "bg-white text-indigo-600 shadow-sm" : "text-stone-500 hover:text-stone-700"}`}
-                >
-                  <KeyRound size={14} className="sm:w-4 sm:h-4" />
-                  <span className="whitespace-nowrap">AI Keys</span>
-                </button>
               </div>
             </div>
 
@@ -2856,81 +2830,20 @@ export default function StoryEditor() {
 
               {activeSettingsTab === "apikeys" && (
                 <div className="space-y-6">
-                  <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-xl text-sm text-indigo-800 leading-relaxed">
+                  <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-xl text-sm text-emerald-800 leading-relaxed">
                     <div className="flex items-center gap-2 mb-2">
-                      <KeyRound size={18} className="text-indigo-600" />
-                      <strong className="text-indigo-900">Kho key Gemini — tự động xoay vòng</strong>
+                      <KeyRound size={18} className="text-emerald-600" />
+                      <strong className="text-emerald-900">AI Provider: DeepSeek</strong>
                     </div>
                     <p className="mb-2">
-                      Dán <strong>nhiều key Gemini miễn phí</strong> vào ô bên dưới, mỗi key một dòng. Khi key đang dùng hết lượt trong ngày, StoryCraft sẽ <strong>tự động chuyển sang key kế tiếp</strong>. Khi toàn bộ key hết lượt → tự chuyển sang DeepSeek.
+                      StoryCraft hiện chỉ sử dụng <strong>DeepSeek</strong> làm AI provider duy nhất (Gemini đã được gỡ bỏ hoàn toàn).
                     </p>
                     <p className="mb-2">
-                      ⚠️ Mỗi key phải tạo từ <strong>1 tài khoản Google khác nhau</strong> (hạn mức free tính theo tài khoản — 2 key cùng 1 tài khoản thì chung 1 hạn mức, xoay cũng vô ích).
+                      Key DeepSeek được cấu hình sẵn trên máy chủ (<code className="bg-emerald-100 px-1 rounded">DEEPSEEK_API_KEY</code> trong Vercel Environment Variables).
                     </p>
                     <p>
-                      Trạng thái "hết lượt" tự reset mỗi ngày theo giờ Mỹ (Pacific). Key Gemini thường bắt đầu bằng <code className="bg-indigo-100 px-1 rounded">AIza...</code> (tạo từ AI Studio) hoặc <code className="bg-indigo-100 px-1 rounded">AQ...</code> (tạo từ Google Cloud Console).
+                      ⚙️ Muốn đổi key: vào <strong>Vercel → Project → Settings → Environment Variables</strong> → sửa <code className="bg-emerald-100 px-1 rounded">DEEPSEEK_API_KEY</code> → Deploy lại.
                     </p>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2 flex items-center gap-2">
-                      <KeyRound size={14} className="text-indigo-500" />
-                      Danh sách key Gemini (mỗi dòng 1 key)
-                    </label>
-                    <textarea
-                      value={keyPoolRaw}
-                      onChange={(e) => setKeyPoolRaw(e.target.value)}
-                      placeholder={"AIzaSy...\nAIzaSy...\nAIzaSy..."}
-                      className="w-full h-36 p-4 rounded-xl border border-stone-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-mono text-xs text-stone-700 leading-relaxed"
-                    />
-                  </div>
-
-                  <div className="p-4 bg-stone-50 rounded-2xl border border-stone-100">
-                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-3">Trạng thái kho key hôm nay</label>
-                    {keyPoolStatus.total === 0 ? (
-                      <p className="text-sm text-stone-500">Chưa có key nào trong kho. Nếu app vẫn viết được thì đang dùng key cấu hình sẵn từ máy chủ (không xoay vòng được).</p>
-                    ) : (
-                      <div className="space-y-2">
-                        <p className="text-sm text-stone-700">
-                          Tổng: <strong>{keyPoolStatus.total}</strong> key · Còn lượt hôm nay: <strong>{keyPoolStatus.active}</strong> key
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {keyPoolStatus.keys.map((k, i) => (
-                            <span
-                              key={i}
-                              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
-                                k.exhausted
-                                  ? "bg-rose-100 text-rose-700"
-                                  : "bg-emerald-100 text-emerald-700"
-                              }`}
-                            >
-                              <span className={`w-1.5 h-1.5 rounded-full ${k.exhausted ? "bg-rose-500" : "bg-emerald-500"}`} />
-                              {k.label} {k.exhausted ? "· hết lượt" : "· còn lượt"}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="pt-2 flex flex-wrap gap-3">
-                    <button
-                      onClick={handleSaveKeyPool}
-                      className="flex items-center gap-2 px-6 py-2 bg-stone-900 text-white rounded-xl text-sm font-bold hover:bg-stone-800 transition-all shadow-lg active:scale-95"
-                    >
-                      {keyPoolSaved ? <CheckCircle2 size={16} /> : <Save size={16} />}
-                      {keyPoolSaved ? "Đã lưu" : "Lưu kho key"}
-                    </button>
-                    <button
-                      onClick={() => {
-                        clearGeminiKeyExhausted();
-                        refreshKeyPoolStatus();
-                      }}
-                      className="flex items-center gap-2 px-4 py-2 bg-white text-stone-600 border border-stone-200 rounded-xl text-sm font-bold hover:bg-stone-50 transition-all"
-                    >
-                      <RotateCcw size={14} />
-                      Đặt lại trạng thái hết lượt
-                    </button>
                   </div>
                 </div>
               )}
